@@ -34,7 +34,7 @@ function MainDashBoardPage() {
 
   const DrawerList = (
     <Box sx={{ width: 250 }} role="presentation" onClick={toggleDrawer(false)}>
-      <Stack direction={'row'} justifyContent={'center'} mr={4}>
+      <Stack direction={'row'} sx={{ pt: 1 }} justifyContent={'center'} mr={4}>
         <Link to="/" replace={true} onClick={() => {
           {
             setFeature({ feature: "Dashboard", url: "/" })
@@ -42,7 +42,7 @@ function MainDashBoardPage() {
             navigate("/")
           }
         }}>
-          <AgarsonLogo width={120} height={120} title='Go To Dashboard' />
+          <AgarsonLogo width={80} height={80} title='Go To Dashboard' />
         </Link>
       </Stack>
       <List>
