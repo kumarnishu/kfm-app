@@ -1,0 +1,27 @@
+import { useContext } from 'react'
+import { useMutation } from 'react-query'
+import { useNavigate } from 'react-router-dom'
+import { UserContext } from '../../contexts/userContext'
+import { Button } from '@mui/material'
+import { Logout } from '../../services/UserServices'
+
+function LogoutButton() {
+    const { mutate } = useMutation(Logout)
+    const goto = useNavigate()
+    const { setUser } = useContext(UserContext)
+    return (
+        <Button fullWidth color="error" variant="outlined"
+            onClick={
+                () => {
+                    mutate()
+                    setUser(undefined)
+                    goto("/Login")
+                }
+            }
+        >
+            Logout
+        </Button>
+    )
+}
+
+export default LogoutButton
