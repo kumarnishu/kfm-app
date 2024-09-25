@@ -168,22 +168,7 @@ export default function UsersPage() {
                                     }
                                 </>
                             }
-                            <Tooltip title="Manage Leads View">
-                                <IconButton
-                                    color="success"
-                                    size="medium"
-                                    onClick={() => {
-                                        setChoice({ type: UserChoiceActions.toogle_show_visitingcard })
-                                        setUser(cell.row.original)
-
-                                    }}
-                                >
-                                    <RemoveRedEye />
-                                </IconButton>
-                            </Tooltip>
-
-
-                            {/*  block login */}
+                             {/*  block login */}
                             {LoggedInUser?.created_by.id === cell.row.original._id ?
                                 null :
                                 <>
