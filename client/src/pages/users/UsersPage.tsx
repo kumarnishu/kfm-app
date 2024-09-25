@@ -25,7 +25,6 @@ import UnBlockUserDialog from '../../components/dialogs/users/UnBlockUserDialog'
 import MakeAdminDialog from '../../components/dialogs/users/MakeAdminDialog'
 import RemoveAdminDialog from '../../components/dialogs/users/RemoveAdminDialog'
 import UpdateUsePasswordDialog from '../../components/dialogs/users/UpdateUsePasswordDialog'
-import ToogleVisitingcardShowDialog from '../../components/dialogs/users/ToogleVisitingcardShowDialog'
 import AssignUsersDialog from '../../components/dialogs/users/AssignUsersDialog'
 import AssignPermissionsToOneUserDialog from '../../components/dialogs/users/AssignPermissionsToOneUserDialog'
 import ExportToExcel from '../../utils/ExportToExcel'
@@ -310,12 +309,7 @@ export default function UsersPage() {
                 size: 120,
                 Cell: (cell) => <>{cell.row.original.assigned_permissions.length || 0}</>
             },
-            {
-                accessorKey: 'show_only_visiting_card_leads',
-                header: 'Leads View',
-                size: 120,
-                Cell: (cell) => <>{cell.row.original.show_only_visiting_card_leads ? "All Leads" : "Only Having Cards"}</>
-            },
+           
             {
                 accessorKey: 'is_multi_login',
                 header: 'Multi Device',
@@ -513,7 +507,6 @@ export default function UsersPage() {
                         <RemoveAdminDialog id={user._id} />
                         <UpdateUsePasswordDialog user={user} />
                         <AssignUsersDialog user={user} setUser={setUser} />
-                        <ToogleVisitingcardShowDialog user={user} />
                         <AssignPermissionsToOneUserDialog user={user} />
                     </>
                     : null

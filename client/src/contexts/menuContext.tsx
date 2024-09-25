@@ -1,15 +1,11 @@
 import React, { useReducer } from "react"
 
 type UserMenu = "profile_menu" | "close_user_menu" | "user_menu"
-type CrmMenu = | "close_crm_menu" | "crm_menu"
 type VisitMenu = | "close_visit_menu" | "visit_menu"
-type ReportMenu = | "close_report_menu" | "report_menu"
-type CheckListMenu = "close_checklist_menu" | "checklist_menu"
-type ProductionMenu = "close_production_menu" | "production_menu"
 
 
 type MenuState = {
-    type: UserMenu | CrmMenu | CheckListMenu | null | VisitMenu | ReportMenu | ProductionMenu
+    type: UserMenu | null | VisitMenu 
     anchorEl: HTMLElement | null
 }
 
@@ -18,44 +14,12 @@ const initialState: MenuState = {
     anchorEl: null
 }
 
-export enum ProductionMenuActions {
-    close_production_menu = "close_production_menu",
-    production_menu = "production_menu"
-}
-export enum CheckListMenuActions {
-    close_checklist_menu = "close_checklist_menu",
-    checklist_menu = "checklist_menu"
-}
-export enum ErpMenuActions {
-    close_erp_menu = "close_erp_menu",
-    erp_menu = "erp_menu"
-}
-export enum TodoMenuActions {
-    close_todo_menu = "close_todo_menu",
-    todo_menu = "todo_menu"
-}
+
 export enum VisitMenuActions {
     close_visit_menu = "close_visit_menu",
     visit_menu = "visit_menu"
 }
-export enum ReportsMenuActions {
-    close_report_menu = "close_report_menu",
-    report_menu = "report_menu"
-}
-export enum TaskMenuActions {
-    close_task_menu = "close_task_menu",
-    task_menu = "task_menu"
-}
 
-
-export enum BotMenuActions {
-    close_bot_menu = "close_bot_menu",
-    bot_menu = "bot_menu"
-}
-export enum CrmMenuActions {
-    close_crm_menu = "close_crm_menu",
-    crm_menu = "crm_menu"
-}
 
 export enum UserMenuActions {
     profile_menu = "profile_menu",
@@ -64,7 +28,7 @@ export enum UserMenuActions {
 }
 
 type Action = {
-    type: UserMenuActions | CrmMenuActions | CheckListMenuActions | ReportsMenuActions | VisitMenuActions  | ProductionMenuActions
+    type: UserMenuActions | VisitMenuActions 
     anchorEl: HTMLElement | null
 }
 
@@ -77,27 +41,10 @@ function reducer(state: MenuState | null, action: Action) {
         case UserMenuActions.close_user_menu: return action
         case UserMenuActions.user_menu: return action
 
-
-        // lead dialog menus
-
-        case CrmMenuActions.close_crm_menu: return action
-        case CrmMenuActions.crm_menu: return action
-
-        case ProductionMenuActions.close_production_menu: return action
-        case ProductionMenuActions.production_menu: return action
-
         // visit
         case VisitMenuActions.close_visit_menu: return action
         case VisitMenuActions.visit_menu: return action
 
-        case ReportsMenuActions.close_report_menu: return action
-        case ReportsMenuActions.report_menu: return action
-
-        // checklist menu action
-        case CheckListMenuActions.close_checklist_menu: return action
-        case CheckListMenuActions.checklist_menu: return action
-
-     
         default: return state
     }
 }

@@ -39,7 +39,6 @@ export const GetUsers = async (req: Request, res: Response, next: NextFunction) 
             is_admin: u.is_admin,
             email_verified: u.email_verified,
             mobile_verified: u.mobile_verified,
-            show_only_visiting_card_leads: u.show_only_visiting_card_leads,
             is_active: u.is_active,
             last_login: moment(u.last_login).format("lll"),
             is_multi_login: u.is_multi_login,
@@ -76,7 +75,6 @@ export const GetProfile = async (req: Request, res: Response, next: NextFunction
             is_admin: user.is_admin,
             email_verified: user.email_verified,
             mobile_verified: user.mobile_verified,
-            show_only_visiting_card_leads: user.show_only_visiting_card_leads,
             is_active: user.is_active,
             last_login: moment(user.last_login).calendar(),
             is_multi_login: user.is_multi_login,
@@ -165,7 +163,6 @@ export const SignUp = async (req: Request, res: Response, next: NextFunction) =>
         is_admin: owner.is_admin,
         email_verified: owner.email_verified,
         mobile_verified: owner.mobile_verified,
-        show_only_visiting_card_leads: owner.show_only_visiting_card_leads,
         is_active: owner.is_active,
         last_login: moment(owner.last_login).calendar(),
         is_multi_login: owner.is_multi_login,
@@ -295,7 +292,6 @@ export const Login = async (req: Request, res: Response, next: NextFunction) => 
         is_admin: user.is_admin,
         email_verified: user.email_verified,
         mobile_verified: user.mobile_verified,
-        show_only_visiting_card_leads: user.show_only_visiting_card_leads,
         is_active: user.is_active,
         last_login: moment(user.last_login).calendar(),
         is_multi_login: user.is_multi_login,
@@ -531,20 +527,7 @@ export const MakeAdmin = async (req: Request, res: Response, next: NextFunction)
     res.status(200).json({ message: "admin role provided successfully" });
 }
 
-export const ToogleShowvisitingcard = async (req: Request, res: Response, next: NextFunction) => {
-    const id = req.params.id;
-    if (!isMongoId(id)) return res.status(400).json({ message: "user id not valid" })
-    let user = await User.findById(id)
-    if (!user) {
-        return res.status(404).json({ message: "user not found" })
-    }
-    user.show_only_visiting_card_leads = !user.show_only_visiting_card_leads
-    if (req.user) {
-        user.updated_by = user
-    }
-    await user.save();
-    res.status(200).json({ message: "changed successfully" });
-}
+
 
 export const AllowMultiLogin = async (req: Request, res: Response, next: NextFunction) => {
     const id = req.params.id;

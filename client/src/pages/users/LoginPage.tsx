@@ -15,7 +15,7 @@ function LoginPage() {
                 <Paper elevation={2} sx={{ maxWidth: '350px', p: 5  , px: 2, borderRadius: 10,border:4,borderColor:'whitesmoke' }}>
                     <Stack justifyContent={"center"} alignItems="center">
                         <a href="https://agarsonshoes.in/">
-                            <AgarsonLogo width={100} height={100} title='Agarson Shoes' />
+                            <AgarsonLogo width={60} height={60} title='Agarson Shoes' />
                         </a>
                         <LoginForm />
                         <Stack
@@ -47,7 +47,7 @@ function LoginPage() {
                     </Stack>
                 </Paper>
             </Stack>
-            <Typography component="h1" variant="button" sx={{ textAlign: "center", fontWeight: '600', fontSize: 12, color: 'grey' }}>Copyright 2024 &copy; Agarson Shoes Pvt Ltd </Typography>
+            <Typography component="h1" variant="button" sx={{ textAlign: "center", fontWeight: '600', fontSize: 12, color: 'grey' }}>Copyright 2024 &copy; Kumar Footwear Machinery </Typography>
             <SignUpDialog />
             <ResetPasswordSendMailDialog />
         </>

@@ -24,13 +24,10 @@ export type IUser = {
   email: string,
   mobile: string,
   dp: Asset,
-  client_id: string,
   orginal_password:string,
-  connected_number: string,
   is_admin: Boolean,
   email_verified: Boolean,
   mobile_verified: Boolean,
-  show_only_visiting_card_leads: boolean,
   is_active: Boolean,
   last_login: Date,
   multi_login_token: string | null,
@@ -94,17 +91,6 @@ const UserSchema = new mongoose.Schema<IUser, mongoose.Model<IUser, {}, IUserMet
     bucket: { type: String },
     created_at: Date
   },
-  client_id: {
-    type: String,
-    required: true,
-    trim: true,
-  },
-
-  connected_number: {
-    type: String,
-    trim: true,
-    index: true
-  },
   is_admin: {
     type: Boolean,
     default: false,
@@ -141,10 +127,7 @@ const UserSchema = new mongoose.Schema<IUser, mongoose.Model<IUser, {}, IUserMet
       default: []
     }
   ],
-  show_only_visiting_card_leads: {
-    type: Boolean,
-    default: false
-  },
+ 
   assigned_crm_states: [
     {
       type: mongoose.Schema.Types.ObjectId,
