@@ -2,9 +2,6 @@ import mongoose from "mongoose"
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import crypto from "crypto";
-import { ICRMCity } from "../leads/crm.city.model";
-import { IState } from "../erp_reports/state.model";
-import { ICRMState } from "../leads/crm.state.model";
 
 export type Asset = {
   _id: string,
@@ -33,9 +30,6 @@ export type IUser = {
   multi_login_token: string | null,
   is_multi_login: boolean,
   assigned_users: IUser[]
-  assigned_states: IState[]
-  assigned_crm_states: ICRMState[]
-  assigned_crm_cities: ICRMCity[],
   assigned_permissions: string[],
   created_at: Date,
   updated_at: Date,
@@ -120,29 +114,6 @@ const UserSchema = new mongoose.Schema<IUser, mongoose.Model<IUser, {}, IUserMet
       default: []
     }
   ],
-  assigned_states: [
-    {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'State',
-      default: []
-    }
-  ],
- 
-  assigned_crm_states: [
-    {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'CRMState',
-      default: []
-    }
-  ],
-  assigned_crm_cities: [
-    {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'CRMCity',
-      default: []
-    }
-  ],
-
   last_login: {
     type: Date,
     default: new Date(),

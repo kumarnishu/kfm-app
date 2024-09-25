@@ -47,9 +47,6 @@ export const GetUsers = async (req: Request, res: Response, next: NextFunction) 
                     id: u._id, label: u.username, value: u.username
                 }
             }),
-            assigned_states: u.assigned_states.length || 0,
-            assigned_crm_states: u.assigned_crm_states.length || 0,
-            assigned_crm_cities: u.assigned_crm_cities.length || 0,
             assigned_permissions: u.assigned_permissions,
             created_at: moment(u.created_at).format("DD/MM/YYYY"),
             updated_at: moment(u.updated_at).format("DD/MM/YYYY"),
@@ -83,9 +80,6 @@ export const GetProfile = async (req: Request, res: Response, next: NextFunction
                     id: user._id, label: user.username, value: user.username
                 }
             }),
-            assigned_states: user.assigned_states.length || 0,
-            assigned_crm_states: user.assigned_crm_states.length || 0,
-            assigned_crm_cities: user.assigned_crm_cities.length || 0,
             assigned_permissions: user.assigned_permissions,
             created_at: moment(user.created_at).format("DD/MM/YYYY"),
             updated_at: moment(user.updated_at).format("DD/MM/YYYY"),
@@ -171,9 +165,6 @@ export const SignUp = async (req: Request, res: Response, next: NextFunction) =>
                 id: owner._id, label: owner.username, value: owner.username
             }
         }),
-        assigned_states: owner.assigned_states.length || 0,
-        assigned_crm_states: owner.assigned_crm_states.length || 0,
-        assigned_crm_cities: owner.assigned_crm_cities.length || 0,
         assigned_permissions: owner.assigned_permissions,
         created_at: moment(owner.created_at).format("DD/MM/YYYY"),
         updated_at: moment(owner.updated_at).format("DD/MM/YYYY"),
@@ -300,9 +291,6 @@ export const Login = async (req: Request, res: Response, next: NextFunction) => 
                 id: u._id, label: u.username, value: u.username
             }
         }),
-        assigned_states: user.assigned_states.length || 0,
-        assigned_crm_states: user.assigned_crm_states.length || 0,
-        assigned_crm_cities: user.assigned_crm_cities.length || 0,
         assigned_permissions: user.assigned_permissions,
         created_at: moment(user.created_at).format("DD/MM/YYYY"),
         updated_at: moment(user.updated_at).format("DD/MM/YYYY"),
