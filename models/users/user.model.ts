@@ -2,6 +2,7 @@ import mongoose from "mongoose"
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import crypto from "crypto";
+import { ICompany } from "../companies/company.model";
 
 export type Asset = {
   _id: string,
@@ -21,6 +22,7 @@ export type IUser = {
   email: string,
   mobile: string,
   dp: Asset,
+  company:ICompany,
   orginal_password:string,
   is_admin: Boolean,
   email_verified: Boolean,
@@ -125,7 +127,10 @@ const UserSchema = new mongoose.Schema<IUser, mongoose.Model<IUser, {}, IUserMet
     required: true,
 
   },
-
+  company: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Company'
+  },
   created_by: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
