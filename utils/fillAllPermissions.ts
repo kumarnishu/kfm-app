@@ -37,8 +37,43 @@ export function FetchAllPermissions() {
             }
         ]
     }
-    
+    let companyMenu: IMenu = {
+        label: 'Company',
+        permissions: [{
+            value: 'company_menu',
+            label: 'Company Button'
+        }],
+        menues: [
 
+            {
+                label: 'Company',
+                permissions: [
+                    {
+                        value: 'company_view',
+                        label: 'view'
+                    },
+                    {
+                        value: 'company_create',
+                        label: 'create'
+                    },
+                    {
+                        value: 'company_edit',
+                        label: 'edit'
+                    },
+                    {
+                        value: 'company_delete',
+                        label: 'delete'
+                    },
+                    {
+                        value: 'company_export',
+                        label: 'export'
+                    }
+                ]
+            }
+        ]
+    }
+
+    permissions.push(companyMenu)
     permissions.push(machineMenu)
     return permissions;
 }

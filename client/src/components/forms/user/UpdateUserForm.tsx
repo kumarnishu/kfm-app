@@ -1,8 +1,8 @@
-import {  Button, CircularProgress, Stack, TextField } from '@mui/material';
+import { Button, CircularProgress, Stack, TextField } from '@mui/material';
 import { AxiosResponse } from 'axios';
 import { useFormik } from 'formik';
 import { useContext, useEffect } from 'react';
-import { useMutation } from 'react-query';
+import { useMutation, useQuery } from 'react-query';
 import * as Yup from "yup"
 import { UserChoiceActions, ChoiceContext } from '../../../contexts/dialogContext';
 import { UpdateUser } from '../../../services/UserServices';
@@ -10,14 +10,11 @@ import { BackendError, Target } from '../../..';
 import { queryClient } from '../../../main';
 import AlertBar from '../../snacks/AlertBar';
 import { GetUserDto } from '../../../dtos/users/user.dto';
+import { DropDownDto } from '../../../dtos/common/dropdown.dto';
+import { GetCompaniesForDropDown } from '../../../services/CompanyServices';
 
 
-type TformData = {
-  username: string,
-  email: string,
-  mobile: string,
-  dp: string | Blob | File
-}
+
 type Props = {
   user: GetUserDto
 }
@@ -29,13 +26,15 @@ function UpdateUserForm({ user }: Props) {
         queryClient.invalidateQueries('users')
       }
     })
+  const { data: companies } = useQuery<AxiosResponse<DropDownDto[]>, BackendError>("companies", async () => GetCompaniesForDropDown())
   const { setChoice } = useContext(ChoiceContext)
-  const formik = useFormik<TformData>({
+  const formik = useFormik({
     initialValues: {
       username: user.username || "",
       email: user?.email || "",
       mobile: String(user.mobile) || "",
-      dp: user.dp || ""
+      dp: user.dp || "",
+      company: user.company ? user.company.id : undefined,
     },
     validationSchema: Yup.object({
       username: Yup.string()
@@ -46,6 +45,8 @@ function UpdateUserForm({ user }: Props) {
         .required('Required field')
         .min(10, 'Must be 10 digits')
         .max(10, 'Must be 10 digits'),
+      company: Yup.string()
+      ,
       email: Yup.string()
         .email('provide a valid email id')
         .required('Required field'),
@@ -73,11 +74,13 @@ function UpdateUserForm({ user }: Props) {
           }
         )
     }),
-    onSubmit: (values: TformData) => {
+    onSubmit: (values) => {
       let formdata = new FormData()
       formdata.append("username", values.username)
       formdata.append("email", values.email)
       formdata.append("mobile", values.mobile)
+      if (values.company)
+        formdata.append("company", values.company)
       formdata.append("dp", values.dp)
       if (user._id)
         mutate({ id: user._id, body: formdata })
@@ -144,7 +147,34 @@ function UpdateUserForm({ user }: Props) {
             }
             {...formik.getFieldProps('email')}
           />
-
+          < TextField
+            select
+            SelectProps={{
+              native: true
+            }}
+            focused
+            error={
+              formik.touched.company && formik.errors.company ? true : false
+            }
+            id="company"
+            helperText={
+              formik.touched.company && formik.errors.company ? formik.errors.company : ""
+            }
+            {...formik.getFieldProps('company')}
+            label="Company"
+            fullWidth
+          >
+            <option key={'00'} value={undefined}>
+              Select 
+            </option>
+            {
+              companies && companies.data && companies.data.map((company, index) => {
+                return (<option key={index} value={company && company.id}>
+                  {company.label}
+                </option>)
+              })
+            }
+          </TextField>
           <TextField
             fullWidth
             error={

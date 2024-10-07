@@ -98,7 +98,7 @@ function ProfileLogo() {
                     }
                 >
                     <Avatar
-                        sx={{ width: 34, height: 34 }}
+                        sx={{ width: 30, height: 30 }}
                         alt="img1" src={user?.dp} />
                 </IconButton>
             </Tooltip>

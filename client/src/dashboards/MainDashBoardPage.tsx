@@ -34,15 +34,15 @@ function MainDashBoardPage() {
 
   const DrawerList = (
     <Box sx={{ width: 250 }} role="presentation" onClick={toggleDrawer(false)}>
-      <Stack direction={'row'} sx={{ pt: 1 }} justifyContent={'center'} mr={4}>
-        <Link to="/" replace={true} onClick={() => {
+      <Stack direction={'row'} sx={{ pt: 1 }} justifyContent={'center'} pt={4}>
+        <Link style={{paddingTop:'10px'}}to="/" replace={true} onClick={() => {
           {
             setFeature({ feature: "Dashboard", url: "/" })
             setSearch("")
             navigate("/")
           }
         }}>
-          <AgarsonLogo width={80} height={80} title='Go To Dashboard' />
+          <AgarsonLogo width={40} height={40} title='Go To Dashboard' />
         </Link>
       </Stack>
       <List>
@@ -91,6 +91,7 @@ function MainDashBoardPage() {
   useEffect(() => {
     let tmpfeatures: { feature: string, is_visible?: boolean, url: string }[] = []
     user?.is_admin && tmpfeatures.push({ feature: 'users', is_visible: true, url: "/Users" })
+    tmpfeatures.push({ feature: 'Company ', is_visible: true, url: "Company" })
     //user?.is_admin && tmpfeatures.push({ feature: 'Visits', is_visible: true, url: "/Visit" })
 
 
@@ -102,7 +103,7 @@ function MainDashBoardPage() {
   return (
     <>
 
-      <Box sx={{ bgcolor: 'rgba(255,0,0,0.8)', width: '100%' }}>
+      <Box sx={{ bgcolor: 'rgba(0,0,255,.8)', width: '100%' }}>
         {/* parent stack */}
         <Stack direction="row" sx={{
           justifyContent: "space-between", alignItems: "center"

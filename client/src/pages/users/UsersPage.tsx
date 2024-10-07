@@ -6,7 +6,7 @@ import { useQuery } from 'react-query'
 import { BackendError } from '../..'
 import { MaterialReactTable, MRT_ColumnDef, MRT_SortingState, useMaterialReactTable } from 'material-react-table'
 import { onlyUnique } from '../../utils/UniqueArray'
-import { Assignment, Block, DeviceHubOutlined, Edit, GroupAdd, GroupRemove, Key, KeyOffOutlined, RemoveCircle,  Restore } from '@mui/icons-material'
+import { Assignment, Block, DeviceHubOutlined, Edit, GroupAdd, GroupRemove, Key, KeyOffOutlined, RemoveCircle, Restore } from '@mui/icons-material'
 import { GetUserDto } from '../../dtos/users/user.dto'
 import { UserContext } from '../../contexts/userContext'
 import { Menu as MenuIcon } from '@mui/icons-material';
@@ -168,7 +168,7 @@ export default function UsersPage() {
                                     }
                                 </>
                             }
-                             {/*  block login */}
+                            {/*  block login */}
                             {LoggedInUser?.created_by.id === cell.row.original._id ?
                                 null :
                                 <>
@@ -252,9 +252,30 @@ export default function UsersPage() {
             {
                 accessorKey: 'username',
                 header: 'Name',
-                size: 120,
+                size: 150,
                 filterVariant: 'multi-select',
                 filterSelectOptions: data && users.map((i) => { return i.username.toString() }).filter(onlyUnique)
+            },
+            {
+                accessorKey: 'company',
+                header: 'Company',
+                size: 320,
+                filterVariant: 'multi-select',
+                Cell: (cell) => <>{cell.row.original.company ? cell.row.original.company.label : ""}</>,
+                filterSelectOptions: data && users.map((i) => {
+                    if (i.company) return i.company.label
+                    return ""
+                }).filter(onlyUnique)
+            },
+            {
+                accessorKey: 'email',
+                header: 'Email',
+                size: 220,
+                Cell: (cell) => <>{cell.row.original.email}</>,
+                filterSelectOptions: data && users.map((i) => {
+                    return i.email
+
+                }).filter(onlyUnique)
             },
             {
                 accessorKey: 'is_admin',
@@ -281,7 +302,7 @@ export default function UsersPage() {
             {
                 accessorKey: 'password',
                 header: 'Password',
-                size: 120,
+                size: 220,
                 filterVariant: 'multi-select',
                 Cell: (cell) => <>{cell.row.original.orginal_password}</>,
                 filterSelectOptions: data && users.map((i) => {
@@ -291,39 +312,27 @@ export default function UsersPage() {
             {
                 accessorKey: 'assigned_permissions',
                 header: 'Permissions',
-                size: 120,
+                size: 220,
                 Cell: (cell) => <>{cell.row.original.assigned_permissions.length || 0}</>
             },
-           
+
             {
                 accessorKey: 'is_multi_login',
                 header: 'Multi Device',
-                size: 120,
+                size: 220,
                 Cell: (cell) => <>{cell.row.original.is_multi_login ? "Allowed" : "Blocked"}</>
             },
             {
                 accessorKey: 'assigned_users',
                 header: 'Assigned Users',
-                size: 120,
+                size: 220,
                 Cell: (cell) => <>{cell.row.original.assigned_users.length || 0}</>
             },
             {
                 accessorKey: 'last_login',
                 header: 'Last Active',
-                size: 120,
+                size: 220,
                 Cell: (cell) => <>{cell.row.original.last_login || ""}</>
-            },
-            {
-                accessorKey: 'email',
-                header: 'Email',
-                size: 120,
-                Cell: (cell) => <>{cell.row.original.email || ""}</>
-            },
-            {
-                accessorKey: 'mobile',
-                header: 'Mobile',
-                size: 120,
-                Cell: (cell) => <>{cell.row.original.mobile || ""}</>
             }
 
         ],
@@ -368,7 +377,7 @@ export default function UsersPage() {
             variant: 'outlined',
         },
         initialState: {
-            density: 'compact', showGlobalFilter: true, pagination: { pageIndex: 0, pageSize: 100 }
+            density: 'compact', pagination: { pageIndex: 0, pageSize: 100 }
         },
         enableGrouping: true,
         enableRowSelection: true,

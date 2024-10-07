@@ -1,4 +1,5 @@
 import mongoose from "mongoose"
+import { IUser } from "../users/user.model"
 
 export type ICompany = {
     _id: string,
@@ -7,8 +8,8 @@ export type ICompany = {
     is_active: Boolean,
     created_at: Date,
     updated_at: Date,
-    created_by: ICompany,
-    updated_by: ICompany
+    created_by: IUser,
+    updated_by: IUser
 }
 
 
@@ -38,7 +39,7 @@ const CompanySchema = new mongoose.Schema<ICompany, mongoose.Model<ICompany, {},
 
     created_by: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'Company',
+        ref: 'User',
         required: true
     },
     updated_at: {
@@ -50,7 +51,7 @@ const CompanySchema = new mongoose.Schema<ICompany, mongoose.Model<ICompany, {},
 
     updated_by: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'Company',
+        ref: 'User',
         required: true
     }
 })

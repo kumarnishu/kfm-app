@@ -1,9 +1,11 @@
 import { DropDownDto } from "../common/dropdown.dto"
 
 export type createOrEditUserDto = {
+    _id?: string,
     username: string,
     email: string,
     password?: string,
+    company?: string,
     mobile: string,
 }
 export type IPermission = {
@@ -20,6 +22,7 @@ export type GetUserDto = {
     username: string,
     email: string,
     mobile: string,
+    company?: DropDownDto,
     dp: string,
     orginal_password?: string,
     is_admin: Boolean,
@@ -56,15 +59,15 @@ export type UpdatePasswordDto = {
     newPassword: string,
     confirmPassword: string
 }
-export type ResetPasswordDto={
+export type ResetPasswordDto = {
     newPassword: string,
     confirmPassword: string
 }
 export type VerifyEmailDto = {
-   email:string
+    email: string
 }
 
-export type AssignPermissionForOneUserDto={
+export type AssignPermissionForOneUserDto = {
     permissions: string[],
     user_id: string
 }

@@ -8,6 +8,7 @@ import { MulterError } from 'multer';
 import { connectDatabase } from './config/db';
 import UserRoutes from "./routes/user.routes";
 import VisitRoutes from "./routes/visit.routes";
+import CompanyRoutes from "./routes/company.routes";
 import CronJobManager from "cron-job-manager";
 import path from 'path';
 import { Server } from "socket.io";
@@ -107,6 +108,7 @@ export const ReportManager = new CronJobManager()
 //server routes
 app.use("/api/v1", UserRoutes)
 app.use("/api/v1", VisitRoutes)
+app.use("/api/v1", CompanyRoutes)
 
 
 //react app handler

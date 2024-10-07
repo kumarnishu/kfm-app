@@ -1,9 +1,9 @@
 import { Visibility, VisibilityOff } from '@mui/icons-material';
-import {  Button, CircularProgress, IconButton, InputAdornment, Stack, TextField } from '@mui/material';
+import { Button, CircularProgress, IconButton, InputAdornment, Stack, TextField } from '@mui/material';
 import { AxiosResponse } from 'axios';
 import { useFormik } from 'formik';
 import { useEffect, useContext, useState } from 'react';
-import { useMutation } from 'react-query';
+import { useMutation, useQuery } from 'react-query';
 import * as Yup from "yup"
 import { UserChoiceActions, ChoiceContext } from '../../../contexts/dialogContext';
 import { NewUser } from '../../../services/UserServices';
@@ -11,33 +11,29 @@ import { BackendError, Target } from '../../..';
 import { queryClient } from '../../../main';
 import AlertBar from '../../snacks/AlertBar';
 import { GetUserDto } from '../../../dtos/users/user.dto';
+import { DropDownDto } from '../../../dtos/common/dropdown.dto';
+import { GetCompaniesForDropDown } from '../../../services/CompanyServices';
 
 
-type TformData = {
-    username: string,
-    email: string,
-    password: string,
-    mobile: string,
-    dp: string | Blob | File
-}
 
 function NewUserForm() {
     const { mutate, isLoading, isSuccess, isError, error } = useMutation
         <AxiosResponse<GetUserDto>, BackendError, FormData>
-        (NewUser,{
+        (NewUser, {
             onSuccess: () => {
                 queryClient.invalidateQueries('users')
             }
         })
-
+    const { data: companies } = useQuery<AxiosResponse<DropDownDto[]>, BackendError>("companies", async () => GetCompaniesForDropDown())
     const { setChoice } = useContext(ChoiceContext)
 
-    const formik = useFormik<TformData>({
+    const formik = useFormik({
         initialValues: {
             username: '',
             email: '',
             mobile: '',
             password: '',
+            company: undefined,
             dp: ''
         },
         validationSchema: Yup.object({
@@ -48,6 +44,7 @@ function NewUserForm() {
             email: Yup.string()
                 .email('provide a valid email id')
                 .required('Required field'),
+            company: Yup.string(),
             password: Yup.string()
                 .min(6, 'Must be 6 characters or more')
                 .max(30, 'Must be 30 characters or less')
@@ -79,12 +76,14 @@ function NewUserForm() {
                     }
                 )
         }),
-        onSubmit: (values: TformData) => {
+        onSubmit: (values) => {
             let formdata = new FormData()
             formdata.append("username", values.username)
             formdata.append("email", values.email)
             formdata.append("password", values.password)
             formdata.append("mobile", values.mobile)
+            if (values.company)
+                formdata.append("company", values.company)
             formdata.append("dp", values.dp)
             mutate(formdata)
         }
@@ -115,7 +114,7 @@ function NewUserForm() {
                 pt={2}
             >
                 <TextField
-                    
+
                     fullWidth
                     required
                     error={
@@ -129,8 +128,8 @@ function NewUserForm() {
                     {...formik.getFieldProps('username')}
                 />
                 <TextField
-                    
-                    
+
+
                     required
                     fullWidth
                     error={
@@ -143,9 +142,37 @@ function NewUserForm() {
                     }
                     {...formik.getFieldProps('email')}
                 />
+                < TextField
+                    select
+                    SelectProps={{
+                        native: true
+                    }}
+                    focused
+                    error={
+                        formik.touched.company && formik.errors.company ? true : false
+                    }
+                    id="company"
+                    helperText={
+                        formik.touched.company && formik.errors.company ? formik.errors.company : ""
+                    }
+                    {...formik.getFieldProps('company')}
+                    label="Select Company"
+                    fullWidth
+                >
+                    <option key={'00'} value={undefined}>
+                        Select
+                    </option>
+                    {
+                        companies && companies.data && companies.data.map((company, index) => {
+                            return (<option key={index} value={company && company.id}>
+                                {company.label}
+                            </option>)
+                        })
+                    }
+                </TextField>
                 <TextField
-                    
-                    
+
+
                     required
                     error={
                         formik.touched.password && formik.errors.password ? true : false
@@ -172,7 +199,7 @@ function NewUserForm() {
                     {...formik.getFieldProps('password')}
                 />
                 <TextField
-                    
+
                     type="number"
                     required
                     fullWidth
@@ -196,7 +223,7 @@ function NewUserForm() {
                     }
                     label="Display Picture"
                     focused
-                    
+
                     type="file"
                     name="dp"
                     onBlur={formik.handleBlur}

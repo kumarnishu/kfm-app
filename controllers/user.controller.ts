@@ -9,6 +9,7 @@ import { sendEmail } from '../utils/sendEmail.util';
 import { FetchAllPermissions } from '../utils/fillAllPermissions';
 import { AssignPermissionForMultipleUserDto, AssignPermissionForOneUserDto, AssignUsersDto, createOrEditUserDto, GetUserDto, IMenu, LoginDto, ResetPasswordDto, UpdatePasswordDto, UpdateProfileDto, VerifyEmailDto } from '../dtos/users/user.dto';
 import moment from 'moment';
+import { Company } from '../models/companies/company.model';
 
 
 export const GetUsers = async (req: Request, res: Response, next: NextFunction) => {
@@ -20,10 +21,10 @@ export const GetUsers = async (req: Request, res: Response, next: NextFunction) 
 
     if (show_assigned_only == 'true') {
         let ids = req.user?.assigned_users.map((id) => { return id._id })
-        users = await User.find({ is_active: true, _id: { $in: ids } }).populate("created_by").populate("updated_by").populate('assigned_users').sort('-last_login')
+        users = await User.find({ is_active: true, _id: { $in: ids } }).populate("created_by").populate("updated_by").populate("company").populate('assigned_users').sort('-last_login')
     }
     else {
-        users = await User.find({ is_active: showhidden == 'false' }).populate("created_by").populate("updated_by").populate('assigned_users').sort('-last_login')
+        users = await User.find({ is_active: showhidden == 'false' }).populate("created_by").populate("updated_by").populate("company").populate('assigned_users').sort('-last_login')
     }
     if (perm) {
         users = users.filter((u) => { return u.assigned_permissions.includes(String(perm)) })
@@ -34,6 +35,9 @@ export const GetUsers = async (req: Request, res: Response, next: NextFunction) 
             username: u.username,
             email: u.email,
             mobile: u.mobile,
+            company: u.company && {
+                id: u.company._id, label: u.company.name, value: u.company.name
+            },
             dp: u.dp?.public_url || "",
             orginal_password: u.orginal_password,
             is_admin: u.is_admin,
@@ -60,13 +64,16 @@ export const GetUsers = async (req: Request, res: Response, next: NextFunction) 
 
 export const GetProfile = async (req: Request, res: Response, next: NextFunction) => {
     let result: GetUserDto | null = null;
-    const user = await User.findById(req.user?._id).populate("created_by").populate("updated_by").populate('assigned_users')
+    const user = await User.findById(req.user?._id).populate("created_by").populate("company").populate("updated_by").populate('assigned_users')
     if (user)
-    result = {
+        result = {
             _id: user._id,
             username: user.username,
             email: user.email,
             mobile: user.mobile,
+            company: user.company && {
+                id: user.company._id, label: user.company.name, value: user.company.name
+            },
             dp: user.dp?.public_url || "",
             orginal_password: user.orginal_password,
             is_admin: user.is_admin,
@@ -138,14 +145,13 @@ export const SignUp = async (req: Request, res: Response, next: NextFunction) =>
         client_data_path: username.split(" ")[0] + `${Number(new Date())}`
 
     })
-
     owner.updated_by = owner
     owner.created_by = owner
     owner.created_at = new Date()
     owner.updated_at = new Date()
     sendUserToken(res, owner.getAccessToken())
     await owner.save()
-    owner = await User.findById(owner._id).populate("created_by").populate('assigned_users').populate("updated_by") || owner
+    owner = await User.findById(owner._id).populate("created_by").populate("company").populate('assigned_users').populate("updated_by") || owner
     let token = owner.getAccessToken()
     result = {
         _id: owner._id,
@@ -175,7 +181,7 @@ export const SignUp = async (req: Request, res: Response, next: NextFunction) =>
 }
 
 export const NewUser = async (req: Request, res: Response, next: NextFunction) => {
-    let { username, email, password, mobile } = req.body as createOrEditUserDto;
+    let { username, email, password, mobile, company } = req.body as createOrEditUserDto;
     // validations
     if (!username || !email || !password || !mobile)
         return res.status(400).json({ message: "fill all the required fields" });
@@ -211,11 +217,10 @@ export const NewUser = async (req: Request, res: Response, next: NextFunction) =
         email,
         mobile,
         is_admin: false,
-        dp,
-        client_id: username.split(" ")[0] + `${Number(new Date())}`,
-        client_data_path: username.split(" ")[0] + `${Number(new Date())}`
+        dp
 
     })
+
     if (req.user) {
         user.created_by = req.user
         user.updated_by = req.user
@@ -225,6 +230,9 @@ export const NewUser = async (req: Request, res: Response, next: NextFunction) =
     user.updated_at = new Date()
 
     await user.save()
+    if (company) {
+        await User.findByIdAndUpdate(user._id, { company })
+    }
     res.status(201).json({ message: "success" })
 }
 
@@ -238,18 +246,18 @@ export const Login = async (req: Request, res: Response, next: NextFunction) => 
 
     let user = await User.findOne({
         username: String(username).toLowerCase().trim(),
-    }).select("+password").populate("created_by").populate('assigned_users').populate("updated_by")
+    }).select("+password").populate("created_by").populate("company").populate('assigned_users').populate("updated_by")
 
     if (!user) {
         user = await User.findOne({
             mobile: String(username).toLowerCase().trim(),
-        }).select("+password").populate("created_by").populate('assigned_users').populate("updated_by")
+        }).select("+password").populate("created_by").populate("company").populate('assigned_users').populate("updated_by")
 
     }
     if (!user) {
         user = await User.findOne({
             email: String(username).toLowerCase().trim(),
-        }).select("+password").populate("created_by").populate('assigned_users').populate("updated_by")
+        }).select("+password").populate("created_by").populate("company").populate('assigned_users').populate("updated_by")
         if (user)
             if (!user.email_verified)
                 return res.status(403).json({ message: "please verify email id before login" })
@@ -281,6 +289,9 @@ export const Login = async (req: Request, res: Response, next: NextFunction) => 
         dp: user.dp?.public_url || "",
         orginal_password: user.orginal_password,
         is_admin: user.is_admin,
+        company: user.company && {
+            id: user.company._id, label: user.company.name, value: user.company.name
+        },
         email_verified: user.email_verified,
         mobile_verified: user.mobile_verified,
         is_active: user.is_active,
@@ -341,7 +352,7 @@ export const UpdateUser = async (req: Request, res: Response, next: NextFunction
     if (!user) {
         return res.status(404).json({ message: "user not found" })
     }
-    let { email, username, mobile } = req.body as createOrEditUserDto;
+    let { email, username, mobile, company } = req.body as createOrEditUserDto;
     if (!username || !email || !mobile)
         return res.status(400).json({ message: "fill all the required fields" });
     //check username
@@ -382,6 +393,9 @@ export const UpdateUser = async (req: Request, res: Response, next: NextFunction
     }
     let mobileverified = user.mobile_verified
     let emaileverified = user.email_verified
+    let com = user.company && user.company._id;
+    if (company)
+        com = company
     if (email !== user.email)
         emaileverified = false
     if (mobile !== user.mobile)
@@ -390,6 +404,7 @@ export const UpdateUser = async (req: Request, res: Response, next: NextFunction
         username,
         email,
         mobile,
+        company: com,
         email_verified: emaileverified,
         mobile_verified: mobileverified,
         dp,
