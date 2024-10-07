@@ -14,10 +14,10 @@ import { CreateOrEditCompany, GetUsersOfACompany } from '../../../services/Compa
 import { ChoiceContext, CompanyChoiceActions } from '../../../contexts/dialogContext';
 
 
-function CreateOrEditCompanyForm({ company }: { company: GetCompanyDto }) {
+function CreateOrEditCompanyForm({ company }: { company?: GetCompanyDto }) {
     const [items, setItems] = useState<createOrEditUserDto[]>([])
     const [item, setItem] = useState<createOrEditUserDto>()
-    const { data: usersData, isSuccess: isSucessUsers } = useQuery<AxiosResponse<GetUserDto[]>, BackendError>(["users", company], async () => GetUsersOfACompany({ id: company._id }))
+    const { data: usersData, isSuccess: isSucessUsers } = useQuery<AxiosResponse<GetUserDto[]>, BackendError>(["users", company], async () => GetUsersOfACompany({ id: company?._id }))
 
     const { mutate, isLoading, isSuccess, isError, error } = useMutation
         <AxiosResponse<string>, BackendError, {

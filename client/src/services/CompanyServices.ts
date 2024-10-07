@@ -14,7 +14,7 @@ export const ToogleCompanyStatus = async ({ id }: { id: string }) => {
     return await apiClient.patch(`companies/${id}`);
 };
 
-export const GetUsersOfACompany = async ({ id }: { id: string }) => {
+export const GetUsersOfACompany = async ({ id }: { id?: string }) => {
     return await apiClient.get(`company/users/${id}`)
 }
 
