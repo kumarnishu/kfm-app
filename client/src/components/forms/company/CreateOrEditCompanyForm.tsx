@@ -8,7 +8,7 @@ import { queryClient } from '../../../main';
 import AlertBar from '../../snacks/AlertBar';
 import { Delete } from '@mui/icons-material';
 import { GetCompanyDto } from '../../../dtos/company/company.dto';
-import { createOrEditUserDto, GetUserDto } from '../../../dtos/users/user.dto';
+import { createOrEditUserDto } from '../../../dtos/users/user.dto';
 import { BackendError } from '../../..';
 import { CreateOrEditCompany, GetUsersOfACompany } from '../../../services/CompanyServices';
 import { ChoiceContext, CompanyChoiceActions } from '../../../contexts/dialogContext';
@@ -17,7 +17,7 @@ import { ChoiceContext, CompanyChoiceActions } from '../../../contexts/dialogCon
 function CreateOrEditCompanyForm({ company }: { company?: GetCompanyDto }) {
     const [items, setItems] = useState<createOrEditUserDto[]>([])
     const [item, setItem] = useState<createOrEditUserDto>()
-    const { data: usersData, isSuccess: isSucessUsers } = useQuery<AxiosResponse<GetUserDto[]>, BackendError>(["users", company], async () => GetUsersOfACompany({ id: company?._id }))
+    const { data: usersData, isSuccess: isSucessUsers } = useQuery<AxiosResponse<createOrEditUserDto[]>, BackendError>(["users", company], async () => GetUsersOfACompany({ id: company?._id }))
 
     const { mutate, isLoading, isSuccess, isError, error } = useMutation
         <AxiosResponse<string>, BackendError, {
@@ -82,7 +82,7 @@ function CreateOrEditCompanyForm({ company }: { company?: GetCompanyDto }) {
                     _id: u._id,
                     username: u.username,
                     email: u.email,
-                    password: u.orginal_password,
+                    password: u.password,
                     mobile: u.mobile
                 }
             }))
@@ -241,7 +241,7 @@ function CreateOrEditCompanyForm({ company }: { company?: GetCompanyDto }) {
                                     focused
                                     required
                                     id="password"
-                                    value={it ? it.password : "passs"}
+                                    value={it ? it.password : ""}
                                     label="Password"
                                     fullWidth
                                     disabled
