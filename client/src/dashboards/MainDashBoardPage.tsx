@@ -96,12 +96,13 @@ function MainDashBoardPage() {
     user?.is_admin && tmpfeatures.push({ feature: 'Problems And Solutions ', is_visible: true, url: "Company" })
     user?.is_admin && tmpfeatures.push({ feature: 'Registered Product ', is_visible: true, url: "Company" })
     user?.is_admin && tmpfeatures.push({ feature: 'Service Requests ', is_visible: true, url: "Company" })
+    user?.is_admin && tmpfeatures.push({ feature: 'Spare Parts ', is_visible: true, url: "Company" })
     // user?.is_admin && tmpfeatures.push({ feature: 'Visit ', is_visible: true, url: "Visit" })
 
   //user?.is_admin && tmpfeatures.push({ feature: 'Visits', is_visible: true, url: "/Visit" })
 
 
-    user?.is_admin && tmpfeatures.push({ feature: 'Spare Parts ', is_visible: false, url: "Company" })
+   
 
     setFeatures(tmpfeatures)
     setFilteredFeatures(tmpfeatures)
