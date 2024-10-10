@@ -9,7 +9,6 @@ import { sendEmail } from '../utils/sendEmail.util';
 import { FetchAllPermissions } from '../utils/fillAllPermissions';
 import { AssignPermissionForMultipleUserDto, AssignPermissionForOneUserDto, AssignUsersDto, createOrEditUserDto, GetUserDto, IMenu, LoginDto, ResetPasswordDto, UpdatePasswordDto, UpdateProfileDto, VerifyEmailDto } from '../dtos/users/user.dto';
 import moment from 'moment';
-import { Company } from '../models/companies/company.model';
 
 
 export const GetUsers = async (req: Request, res: Response, next: NextFunction) => {

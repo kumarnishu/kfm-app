@@ -10,7 +10,6 @@ import VisitAdminPage from './pages/visit/VisitAdminPage.tsx'
 import ResetPasswordDialog from './components/dialogs/users/ResetPasswordDialog.tsx'
 import VisitDashboard from './dashboards/VisitDashboard.tsx'
 import EmailVerifyPage from './pages/users/EmailVerifyPage.tsx'
-import CompanyDashboard from './dashboards/CompanyDashboard.tsx'
 import CompanyPage from './pages/companies/CompanyPage.tsx'
 
 
@@ -40,7 +39,7 @@ function AppRoutes() {
             < Route path="Company" >
               <Route index
                 element={
-                  <CompanyDashboard />
+                  <CompanyPage />
                 }
               />
 
