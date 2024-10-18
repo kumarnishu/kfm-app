@@ -6,9 +6,10 @@ import './index.css'
 import { UserProvider } from "./contexts/userContext";
 import { BrowserRouter } from "react-router-dom";
 import { ChoiceProvider } from "./contexts/dialogContext";
-import { MenuProvider } from "./contexts/menuContext";
 import { LoadingProvider } from './contexts/loaderContext.tsx';
 import { FeatureProvider } from './contexts/featureContext.tsx';
+import { AlertProvider } from './contexts/alertContext.tsx';
+import { MenuProvider } from './contexts/menuContext.tsx';
 
 
 export const queryClient = new QueryClient({
@@ -26,11 +27,13 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
       <UserProvider>
         <LoadingProvider>
           <ChoiceProvider>
-            <MenuProvider>
+            <AlertProvider>
               <FeatureProvider>
-                <App />
+                <MenuProvider>
+                  <App />
+                </MenuProvider>
               </FeatureProvider>
-            </MenuProvider>
+            </AlertProvider>
           </ChoiceProvider>
         </LoadingProvider>
       </UserProvider>

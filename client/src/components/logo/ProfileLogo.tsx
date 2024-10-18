@@ -3,7 +3,6 @@ import { useContext } from 'react'
 import { useNavigate } from 'react-router-dom';
 import { UserMenuActions, MenuContext } from '../../contexts/menuContext';
 import { ChoiceContext, UserChoiceActions } from '../../contexts/dialogContext';
-import NewUserDialog from '../dialogs/users/NewUserDialog';
 import EmailVerifySendMailDialog from '../dialogs/users/EmailVerifySendMailDialog';
 import UpdateProfileDialog from '../dialogs/users/UpdateProfileDialog';
 import UpdatePasswordDialog from '../dialogs/users/UpdatePasswordDialog';
@@ -11,6 +10,7 @@ import { UserContext } from '../../contexts/userContext';
 import ProfileDialog from '../dialogs/users/ProfileDialog';
 import { FeatureContext } from '../../contexts/featureContext';
 import LogoutButton from '../buttons/LogoutButton';
+import CreateOrEditUserDialog from '../dialogs/users/CreateOrEditUserDialog';
 
 
 function ProfileMenu() {
@@ -23,7 +23,7 @@ function ProfileMenu() {
     return (
         <>
             {/* new user dialog */}
-            <NewUserDialog />
+            <CreateOrEditUserDialog />
             <Menu
                 anchorEl={menu?.anchorEl}
                 open={Boolean(menu?.type === UserMenuActions.profile_menu)}

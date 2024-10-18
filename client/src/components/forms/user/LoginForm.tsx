@@ -11,14 +11,12 @@ import { UserChoiceActions, ChoiceContext } from '../../../contexts/dialogContex
 import { UserContext } from '../../../contexts/userContext';
 import { Login } from '../../../services/UserServices';
 import { BackendError } from '../../..';
-import AlertBar from '../../snacks/AlertBar';
-import { Navigate } from "react-router-dom";
-import { GetUserDto } from '../../../dtos/users/user.dto';
-import { FeatureContext } from '../../../contexts/featureContext';
+import { GetUserDto } from '../../../dtos/user.dto';
+import { AlertContext } from '../../../contexts/alertContext';
 
 function LoginForm() {
   const goto = useNavigate()
-  const { mutate, data, isSuccess, isLoading, isError, error } = useMutation
+  const { mutate, data, isSuccess, isLoading, error } = useMutation
     <AxiosResponse<{ user: GetUserDto, token: string }>,
       BackendError,
       { username: string, password: string, multi_login_token?: string }
@@ -26,7 +24,6 @@ function LoginForm() {
 
   const { setChoice } = useContext(ChoiceContext)
   const { setUser } = useContext(UserContext)
-  const { setFeature } = useContext(FeatureContext)
   const formik = useFormik({
     initialValues: {
       username: '',
@@ -59,18 +56,25 @@ function LoginForm() {
     e.preventDefault()
   };
 
+  const { setAlert } = useContext(AlertContext)
+
   useEffect(() => {
-    if (isSuccess) {
+    if (isSuccess && data) {
       setUser(data.data.user)
-      setFeature({ feature: "Dashboard", url: "/" })
       setChoice({ type: UserChoiceActions.close_user })
+      setAlert({ message: "logged in ...", color: "success" })
+      goto("/", { replace: true })
+
     }
-  }, [setUser, goto, setChoice, isSuccess, data])
+    if (error) {
+      setAlert({ message: error.response.data.message, color: 'error' })
+    }
+  }, [isSuccess, data, error])
+
 
   return (
     <>
-      {isSuccess && <Navigate to="/" replace={true} />}
-      <form onSubmit={formik.handleSubmit}>
+     <form onSubmit={formik.handleSubmit}>
 
         <Stack
           direction="column"
@@ -121,16 +125,7 @@ function LoginForm() {
             }}
             {...formik.getFieldProps('password')}
           />
-          {
-            isError ? (
-              <AlertBar message={error?.response.data.message} color="error" />
-            ) : null
-          }
-          {
-            isSuccess ? (
-              <AlertBar message="logged in" color="success" />
-            ) : null
-          }
+
           <Button size="large" variant="contained"
             disabled={Boolean(isLoading)}
             type="submit" fullWidth>{Boolean(isLoading) ? <CircularProgress /> : "Login"}

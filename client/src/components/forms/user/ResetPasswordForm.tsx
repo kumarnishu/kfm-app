@@ -11,13 +11,13 @@ import { UserChoiceActions, ChoiceContext } from '../../../contexts/dialogContex
 import { ResetPassword } from '../../../services/UserServices';
 import { BackendError } from '../../..';
 import { queryClient } from '../../../main';
-import AlertBar from '../../snacks/AlertBar';
+import { AlertContext } from '../../../contexts/alertContext';
 
 
 function ResetPasswordForm({ token }: { token: string }) {
   const { setChoice } = useContext(ChoiceContext)
   const goto = useNavigate()
-  const { mutate, isLoading, isSuccess, isError, error } = useMutation
+  const { mutate, isLoading, isSuccess,  error } = useMutation
     <AxiosResponse<string>,
       BackendError,
       { token: string, body: { newPassword: string, confirmPassword: string } }
@@ -63,12 +63,20 @@ function ResetPasswordForm({ token }: { token: string }) {
     e.preventDefault()
   };
 
+  const { setAlert } = useContext(AlertContext)
+
   useEffect(() => {
-    if (isSuccess) {
+    if (isSuccess ) {
       setChoice({ type: UserChoiceActions.close_user })
-      goto("/")
+      setAlert({ message: "Reset password successfully", color: "success" })
+      goto("/", { replace: true })
+
     }
-  }, [goto, setChoice, isSuccess])
+    if (error) {
+      setAlert({ message: error.response.data.message, color: 'error' })
+    }
+  }, [isSuccess, error])
+
 
   return (
 
@@ -133,16 +141,7 @@ function ResetPasswordForm({ token }: { token: string }) {
           }}
           {...formik.getFieldProps('confirmPassword')}
         />
-        {
-          isError ? (
-            <AlertBar message={error?.response.data.message} color="error" />
-          ) : null
-        }
-        {
-          isSuccess ? (
-            <AlertBar message="Reset password successfully" color="success" />
-          ) : null
-        }
+       
        
         <Button variant="contained"
           disabled={Boolean(isLoading)}

@@ -7,31 +7,25 @@ import React, { useContext, useEffect, useState } from 'react';
 import { useMutation } from 'react-query';
 import * as Yup from 'yup';
 import { UserChoiceActions, ChoiceContext } from '../../../contexts/dialogContext';
-import { UpdatePassword } from '../../../services/UserServices';
 import { BackendError } from '../../..';
+import { ChangePasswordFromAdmin } from '../../../services/UserServices';
 import { AlertContext } from '../../../contexts/alertContext';
 
 
-function UpdatePasswordForm() {
-    const { mutate, isSuccess, isLoading, error } = useMutation
+function ChangePasswordFromAdminForm({ id }: { id: string }) {
+    const { mutate, isSuccess, isLoading,  error } = useMutation
         <AxiosResponse<string>,
             BackendError,
-            { oldPassword: string, newPassword: string, confirmPassword: string }
-        >(UpdatePassword)
+            { id: string, body: { newPassword: string, confirmPassword: string } }
+        >(ChangePasswordFromAdmin)
 
     const { setChoice } = useContext(ChoiceContext)
     const formik = useFormik({
         initialValues: {
-            oldPassword: "",
             newPassword: "",
             confirmPassword: ""
         },
         validationSchema: Yup.object({
-
-            oldPassword: Yup.string()
-                .min(4, 'Must be 4 characters or more')
-                .max(30, 'Must be 30 characters or less')
-                .required('Required field'),
             newPassword: Yup.string()
                 .min(4, 'Must be 4 characters or more')
                 .max(30, 'Must be 30 characters or less')
@@ -42,11 +36,13 @@ function UpdatePasswordForm() {
                 .required('Required field')
         }),
         onSubmit: (values: {
-            oldPassword: string,
             newPassword: string,
             confirmPassword: string
         }) => {
-            mutate(values)
+            mutate({
+                id: id,
+                body: values
+            })
         },
     });
 
@@ -65,7 +61,7 @@ function UpdatePasswordForm() {
     useEffect(() => {
         if (isSuccess) {
             setChoice({ type: UserChoiceActions.close_user })
-            setAlert({ message: "Updated password successfully", color: "success" })
+            setAlert({ message: "changed password successfully", color: "success" })
 
         }
         if (error) {
@@ -81,34 +77,6 @@ function UpdatePasswordForm() {
                 pt={2}
                 gap={2}
             >
-
-                <TextField
-                    required
-                    error={
-                        formik.touched.oldPassword && formik.errors.oldPassword ? true : false
-                    }
-                    id="oldPassword"
-
-                    label="Old Password"
-                    fullWidth
-                    helperText={
-                        formik.touched.oldPassword && formik.errors.oldPassword ? formik.errors.oldPassword : ""
-                    }
-                    type={visiblity ? "text" : "password"}
-                    InputProps={{
-                        endAdornment: (
-                            <InputAdornment position="end">
-                                <IconButton
-                                    onClick={handlePasswordVisibility}
-                                    onMouseDown={(e) => handleMouseDown(e)}
-                                >
-                                    {visiblity ? <VisibilityOff /> : <Visibility />}
-                                </IconButton>
-                            </InputAdornment>
-                        ),
-                    }}
-                    {...formik.getFieldProps('oldPassword')}
-                />
                 <TextField
                     required
                     error={
@@ -172,4 +140,4 @@ function UpdatePasswordForm() {
     )
 }
 
-export default UpdatePasswordForm
+export default ChangePasswordFromAdminForm

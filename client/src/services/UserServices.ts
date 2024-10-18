@@ -1,7 +1,5 @@
 import { apiClient } from "./utils/AxiosInterceptor";
 
-
-// login
 export const Login = async (
   body: {
     username: string,
@@ -12,88 +10,67 @@ export const Login = async (
   return await apiClient.post("login", body);
 };
 
-// signup new organization and owner
 export const Signup = async (body: FormData) => {
   return await apiClient.post("signup", body);
 };
-// new user
-export const NewUser = async (body: FormData) => {
+
+export const CreateOrEditUser = async ({ id, body }: { id?: string, body: FormData }) => {
+  if (id)
+    return await apiClient.put(`users/${id}`, body);
   return await apiClient.post("users", body);
 };
-export const NewCustomer = async (body: FormData) => {
-  return await apiClient.post("customers", body);
-};
-// update user
-export const UpdateUser = async ({ id, body }: { id: string, body: FormData }) => {
-  return await apiClient.put(`users/${id}`, body);
-};
 
-// logout
 export const Logout = async () => {
   return await apiClient.post("logout");
 };
-// get users
 
 
-export const GetUsers = async ({ hidden, permission, show_assigned_only }: { hidden?: string, show_assigned_only: boolean, permission?: string }) => {
-  if (hidden && !permission)
-    return await apiClient.get(`users/?hidden=${hidden ? hidden : 'false'}&show_assigned_only=${show_assigned_only}`)
-  else if (permission && hidden)
-    return await apiClient.get(`users/?permission=${permission}&hidden=${hidden ? hidden : 'false'}&show_assigned_only=${show_assigned_only}`)
-  return await apiClient.get(`users`)
+export const GetAssignedUsersForEdit = async (id: string) => {
+  return await apiClient.get(`assigned/users/edit/${id}`)
 }
 
+export const GetAllUsers = async ({ hidden, permission, show_assigned_only }: { hidden: boolean, show_assigned_only?: boolean, permission?: string }) => {
+  return await apiClient.get(`users/?permission=${permission}&hidden=${hidden}&show_assigned_only=${show_assigned_only}`)
+}
+export const GetAllUsersForDropDown = async ({ hidden, permission, show_assigned_only }: { hidden: boolean, show_assigned_only?: boolean, permission?: string }) => {
+  return await apiClient.get(`dropdown/users/?permission=${permission}&hidden=${hidden}&show_assigned_only=${show_assigned_only}`)
+}
+
+export const GetUserForEdit = async (id: string) => {
+  return await apiClient.get(`users/edit/${id}`)
+}
 
 export const GetPermissions = async () => {
   return await apiClient.get(`permissions`)
 }
 
-
-// block user
-export const BlockUser = async (id: string) => {
-  return await apiClient.patch(`block/user/${id}`)
-}
-export const ToogleSHowVisitingCard = async (id: string) => {
-  return await apiClient.patch(`tooglevisitingcardleads/user/${id}`)
-}
-
-
-export const ResetMultiLogin = async (id: string) => {
-  return await apiClient.patch(`allow/multi_login/${id}`)
-}
-export const BlockMultiLogin = async (id: string) => {
-  return await apiClient.patch(`block/multi_login/${id}`)
-}
-// unblock user
-export const UnBlockUser = async (id: string) => {
-  return await apiClient.patch(`unblock/user/${id}`)
-}
-
-
-
 // make admin
-export const MakeAdmin = async (id: string) => {
-  return await apiClient.patch(`make-admin/user/${id}`)
+export const ToogleAdmin = async (id: string) => {
+  return await apiClient.patch(`toogle-admin/${id}`)
 }
-// revoke permissions of a admin 
-export const RemoveAdmin = async (id: string) => {
-  return await apiClient.patch(`remove-admin/user/${id}`)
+// block user
+export const ToogleBlockUser = async (id: string) => {
+  return await apiClient.patch(`toogle-block-user/${id}`)
 }
-// get profile
+
+export const ToogleMultiDeviceLogin = async (id: string) => {
+  return await apiClient.patch(`toogle-multi-device-login/${id}`)
+}
+
+
+
 export const GetProfile = async () => {
   return await apiClient.get("profile");
 };
-// update profile
 export const UpdateProfile = async (body: FormData) => {
   return await apiClient.put("profile", body);
 };
 
-// //update password
 export const UpdatePassword = async (body: { oldPassword: string, newPassword: string, confirmPassword: string }) => {
   return await apiClient.patch("password/update", body)
 };
-export const UpdateUserPassword = async ({ id, body }: { id: string, body: { newPassword: string, confirmPassword: string } }) => {
-  return await apiClient.patch(`password/reset/${id}`, body)
+export const ChangePasswordFromAdmin = async ({ id, body }: { id: string, body: { newPassword: string, confirmPassword: string } }) => {
+  return await apiClient.patch(`password/change-from-admin/${id}`, body)
 };
 // //update password
 export const ResetPassword = async ({ token, body }:
@@ -104,12 +81,11 @@ export const ResetPassword = async ({ token, body }:
   return await apiClient.patch(`password/reset/${token}`, body)
 };
 
-// send reset password
-export const ResetPasswordSendMail = async ({ email }:
+export const SendMailForResetPasswordLink = async ({ email }:
   {
     email: string
   }) => {
-  return await apiClient.post(`password/reset`, { email: email })
+  return await apiClient.post(`send/email/password-reset-link`, { email: email })
 };
 
 // verify email
@@ -118,15 +94,15 @@ export const VerifyEmail = async (token: string) => {
 };
 
 // send verification main
-export const SendVerifyEmail = async ({ email }:
+export const SendEmailVerificationLink = async ({ email }:
   {
     email: string
   }) => {
-  return await apiClient.post(`email/verify`, { email: email })
+  return await apiClient.post(`send/email/verifcation-link`, { email: email })
 };
 
-export const AssignUsers = async ({ id, body }: { id: string, body: { ids: string[] } }) => {
-  return await apiClient.patch(`assign/users/${id}`, body)
+export const AssignUsersUnderManager = async ({ id, body }: { id: string, body: { ids: string[] } }) => {
+  return await apiClient.patch(`assign-users/${id}`, body)
 }
 
 export const AssignPermissionsToOneUser = async ({ body }: {
@@ -138,9 +114,7 @@ export const AssignPermissionsToOneUser = async ({ body }: {
   return await apiClient.post(`permissions/one`, body)
 }
 
-
-
-export const AssignPermissionsToUsers = async ({ body }: {
+export const AssignSimilarPermissionToMultipleUsers = async ({ body }: {
   body: {
     user_ids: string[],
     permissions: string[]
@@ -150,3 +124,10 @@ export const AssignPermissionsToUsers = async ({ body }: {
 }
 
 
+export const CreateUserFromExcel = async (body: FormData) => {
+  return await apiClient.post("create-from-excel/users", body);
+};
+
+export const DownloadExcelTemplateForCreateUsers = async () => {
+  return await apiClient.get("download/template/users");
+};

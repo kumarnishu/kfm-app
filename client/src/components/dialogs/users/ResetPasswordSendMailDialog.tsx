@@ -1,14 +1,14 @@
-import { Dialog, DialogActions, DialogContent, DialogTitle, IconButton, Typography } from '@mui/material'
+import { Dialog,  DialogContent, DialogTitle, IconButton } from '@mui/material'
 import { useContext} from 'react'
 import { UserChoiceActions, ChoiceContext } from '../../../contexts/dialogContext'
-import ResetPasswordSendMailForm from '../../forms/user/ResetPasswordSendMailForm'
+import ResetPasswordSendMailForm from '../../forms/user/SendMailForResetPasswordLinkForm'
 import { Cancel } from '@mui/icons-material'
 
 function ResetPasswordSendMailDialog() {
     const { choice, setChoice } = useContext(ChoiceContext)
 
     return (
-        <Dialog open={choice === UserChoiceActions.reset_password_mail ? true : false}
+        <Dialog open={choice === UserChoiceActions.send_password_reset_link ? true : false}
             onClose={() => setChoice({ type: UserChoiceActions.close_user })}
         >
             <IconButton style={{ display: 'inline-block', position: 'absolute', right: '0px' }} color="error" onClick={() => setChoice({ type: UserChoiceActions.close_user })}>
@@ -19,19 +19,6 @@ function ResetPasswordSendMailDialog() {
             <DialogContent>
                 <ResetPasswordSendMailForm />
             </DialogContent>
-            <DialogActions>
-                <Typography
-                    variant="button"
-                    component="p"
-                    sx={{
-                        display: "flex",
-                        width: "100%",
-                        alignItems: "center",
-                        justifyContent: "center"
-                    }}
-                >
-                </Typography >
-            </DialogActions>
         </Dialog>
     )
 }

@@ -1,4 +1,4 @@
-import {  Button, CircularProgress, Stack, TextField } from '@mui/material';
+import { Button, CircularProgress, Stack, TextField } from '@mui/material';
 import { useFormik } from 'formik';
 import { useMutation } from 'react-query';
 import * as Yup from "yup"
@@ -8,18 +8,12 @@ import { useContext, useEffect } from 'react';
 import { AxiosResponse } from 'axios';
 import { BackendError, Target } from '../../..';
 import { queryClient } from '../../../main';
-import AlertBar from '../../snacks/AlertBar';
-import { GetUserDto } from '../../../dtos/users/user.dto';
+import { GetUserDto, UpdateProfileDto } from '../../../dtos/user.dto';
+import { AlertContext } from '../../../contexts/alertContext';
 
 
-type TformData = {
-  email: string,
-  mobile: string,
-  dp: string | Blob | File
-}
-
-function UpdateProfileForm({ user }: { user: GetUserDto }) {
-  const { mutate, isLoading, isSuccess, isError, error } = useMutation
+function UpdateProfileForm({ user }: { user: UpdateProfileDto }) {
+  const { mutate, isLoading, isSuccess,  error } = useMutation
     <AxiosResponse<GetUserDto>, BackendError, FormData>
     (UpdateProfile, {
       onSuccess: () => {
@@ -28,11 +22,11 @@ function UpdateProfileForm({ user }: { user: GetUserDto }) {
     })
   const { setChoice } = useContext(ChoiceContext)
 
-  const formik = useFormik<TformData>({
+  const formik = useFormik({
     initialValues: {
       email: user.email,
       mobile: String(user.mobile),
-      dp: user.dp || ""
+      dp: ""
     },
     validationSchema: Yup.object({
       mobile: Yup.string()
@@ -66,7 +60,7 @@ function UpdateProfileForm({ user }: { user: GetUserDto }) {
           }
         )
     }),
-    onSubmit: (values: TformData) => {
+    onSubmit: (values) => {
       let formdata = new FormData()
       formdata.append("email", values.email)
       formdata.append("mobile", values.mobile)
@@ -74,11 +68,18 @@ function UpdateProfileForm({ user }: { user: GetUserDto }) {
       mutate(formdata)
     }
   });
+  const { setAlert } = useContext(AlertContext)
+
   useEffect(() => {
     if (isSuccess) {
       setChoice({ type: UserChoiceActions.close_user })
+      setAlert({ message: "Updated profile successfully", color: "success" })
+
     }
-  }, [isSuccess, setChoice])
+    if (error) {
+      setAlert({ message: error.response.data.message, color: 'error' })
+    }
+  }, [isSuccess, error])
 
   return (
     <form onSubmit={formik.handleSubmit}>
@@ -88,7 +89,7 @@ function UpdateProfileForm({ user }: { user: GetUserDto }) {
         gap={2}
         pt={2}>
         <TextField
-          
+
 
           required
           fullWidth
@@ -103,7 +104,7 @@ function UpdateProfileForm({ user }: { user: GetUserDto }) {
           {...formik.getFieldProps('email')}
         />
         <TextField
-          
+
           type="number"
           required
           fullWidth
@@ -127,7 +128,7 @@ function UpdateProfileForm({ user }: { user: GetUserDto }) {
           }
           label="Display Picture"
           focused
-          
+
           type="file"
           name="dp"
           onBlur={formik.handleBlur}
@@ -141,19 +142,10 @@ function UpdateProfileForm({ user }: { user: GetUserDto }) {
             }
           }}
         />
-        {
-          isError ? (
-            <AlertBar message={error?.response.data.message} color="error" />
-          ) : null
-        }
-        {
-          isSuccess ? (
-            <AlertBar message="updated profile" color="success" />
-          ) : null
-        }
+       
         <Button variant="contained" color="primary" type="submit"
           disabled={Boolean(isLoading)}
-          fullWidth>{Boolean(isLoading) ? <CircularProgress /> : "Update"}</Button>
+          fullWidth>{Boolean(isLoading) ? <CircularProgress /> : "Submit"}</Button>
       </Stack>
     </form>
   )

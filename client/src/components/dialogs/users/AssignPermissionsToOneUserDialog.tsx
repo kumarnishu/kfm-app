@@ -6,21 +6,20 @@ import { AxiosResponse } from 'axios';
 import { useMutation, useQuery } from 'react-query';
 import { BackendError } from '../../..';
 import { queryClient } from '../../../main';
-import AlertBar from '../../snacks/AlertBar';
 import { AssignPermissionsToOneUser, GetPermissions } from '../../../services/UserServices';
-import { GetUserDto, IMenu, IPermission } from '../../../dtos/users/user.dto';
+import { GetUserDto, IMenu, IPermission } from '../../../dtos/user.dto';
+import { AlertContext } from '../../../contexts/alertContext';
 
 
 
 function RenderTree({ permissiontree, permissions, setPermissions }: { permissiontree: any, permissions: string[], setPermissions: React.Dispatch<React.SetStateAction<string[]>> }) {
-    console.log(permissions);
 
     if (Array.isArray(permissiontree)) {
         return permissiontree.map((item: IMenu, index: number) => (
             <div key={index} style={{ padding: 10 }}>
                 <h3 style={{ paddingLeft: item.menues && item.permissions ? '10px' : '25px' }}>{item.label}</h3>
                 {item.permissions && (
-                    <Stack flexDirection={'row'}  paddingTop={2}>
+                    <Stack flexDirection={'row'} paddingTop={2}>
                         {item.permissions.map((perm: IPermission, idx: number) => (
                             <Stack flexDirection={'row'} pl={item.menues && item.permissions ? '10px' : '25px'} key={idx}>
                                 <input type="checkbox"
@@ -49,11 +48,13 @@ function RenderTree({ permissiontree, permissions, setPermissions }: { permissio
     else return null
 }
 
-function AssignPermissionsToOneUserDialog({ user }: { user: GetUserDto }) {
+function AssignPermissionsToOneUserDialog({ user }: { user: GetUserDto}) {
     const [permissiontree, setPermissiontree] = useState<IMenu>()
     const [permissions, setPermissions] = useState<string[]>(user.assigned_permissions)
+
+
     const { choice, setChoice } = useContext(ChoiceContext)
-    const { mutate, isLoading, isSuccess, isError, error } = useMutation
+    const { mutate, isLoading, isSuccess, error } = useMutation
         <AxiosResponse<string>, BackendError, {
             body: {
                 user_id: string,
@@ -65,7 +66,7 @@ function AssignPermissionsToOneUserDialog({ user }: { user: GetUserDto }) {
                 queryClient.invalidateQueries('users')
             }
         })
-    const { data: Permdata, isSuccess: isPermSuccess } = useQuery<AxiosResponse<IMenu>, BackendError>("permissions", GetPermissions)
+    const { data: Permdata, isSuccess: isPermSuccess } = useQuery<AxiosResponse<IMenu>, BackendError>(["permissions"], GetPermissions)
 
 
 
@@ -73,20 +74,25 @@ function AssignPermissionsToOneUserDialog({ user }: { user: GetUserDto }) {
         if (isPermSuccess) {
             setPermissiontree(Permdata.data);
         }
+        if (user)
+            setPermissions(user.assigned_permissions)
 
     }, [isPermSuccess, user])
 
-    
 
-    useEffect(() => {
-        setPermissions(user.assigned_permissions)
-    }, [user])
+
+    const { setAlert } = useContext(AlertContext)
 
     useEffect(() => {
         if (isSuccess) {
-            setChoice({ type: UserChoiceActions.close_user });
+            setChoice({ type: UserChoiceActions.close_user })
+            setAlert({ message: "selected permissions assigned successfully", color: 'success' })
+
         }
-    }, [isSuccess])
+        if (error) {
+            setAlert({ message: error.response.data.message, color: 'error' })
+        }
+    }, [isSuccess, error])
     return (
         <Dialog
             fullWidth
@@ -135,16 +141,6 @@ function AssignPermissionsToOneUserDialog({ user }: { user: GetUserDto }) {
 
 
                 </Stack>
-                {
-                    isError ? (
-                        <AlertBar message={error?.response.data.message} color="error" />
-                    ) : null
-                }
-                {
-                    isSuccess ? (
-                        <AlertBar message="successfull" color="success" />
-                    ) : null
-                }
             </DialogContent>
         </Dialog >
     )

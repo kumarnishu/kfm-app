@@ -1,4 +1,4 @@
-import { IMenu } from "../dtos/users/user.dto";
+import { IMenu } from "../dtos/user.dto";
 
 export function FetchAllPermissions() {
     let permissions: IMenu[] = [];
@@ -37,35 +37,35 @@ export function FetchAllPermissions() {
             }
         ]
     }
-    let companyMenu: IMenu = {
-        label: 'Company',
+    let customer: IMenu = {
+        label: 'Customer',
         permissions: [{
-            value: 'company_menu',
-            label: 'Company Button'
+            value: 'customer_menu',
+            label: 'Customer Button'
         }],
         menues: [
 
             {
-                label: 'Company',
+                label: 'Customer',
                 permissions: [
                     {
-                        value: 'company_view',
+                        value: 'customer_view',
                         label: 'view'
                     },
                     {
-                        value: 'company_create',
+                        value: 'customer_create',
                         label: 'create'
                     },
                     {
-                        value: 'company_edit',
+                        value: 'customer_edit',
                         label: 'edit'
                     },
                     {
-                        value: 'company_delete',
+                        value: 'customer_delete',
                         label: 'delete'
                     },
                     {
-                        value: 'company_export',
+                        value: 'customer_export',
                         label: 'export'
                     }
                 ]
@@ -73,7 +73,7 @@ export function FetchAllPermissions() {
         ]
     }
 
-    permissions.push(companyMenu)
+    permissions.push(customer)
     permissions.push(machineMenu)
     return permissions;
 }

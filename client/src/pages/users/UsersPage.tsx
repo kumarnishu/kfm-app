@@ -7,36 +7,34 @@ import { BackendError } from '../..'
 import { MaterialReactTable, MRT_ColumnDef, MRT_SortingState, useMaterialReactTable } from 'material-react-table'
 import { onlyUnique } from '../../utils/UniqueArray'
 import { Assignment, Block, DeviceHubOutlined, Edit, GroupAdd, GroupRemove, Key, KeyOffOutlined, RemoveCircle, Restore } from '@mui/icons-material'
-import { GetUserDto } from '../../dtos/users/user.dto'
 import { UserContext } from '../../contexts/userContext'
 import { Menu as MenuIcon } from '@mui/icons-material';
 import { DownloadFile } from '../../utils/DownloadFile'
-import { GetUsers } from '../../services/UserServices'
-import NewUserDialog from '../../components/dialogs/users/NewUserDialog'
-import AssignPermissionsToUsersDialog from '../../components/dialogs/users/AssignPermissionsToUsersDialog'
+import AssignPermissionsToUsersDialog from '../../components/dialogs/users/AssignSimilarPermissionsToMultipleUsersDialog'
 import { ChoiceContext, UserChoiceActions } from '../../contexts/dialogContext'
 import PopUp from '../../components/popup/PopUp'
-import UpdateUserDialog from '../../components/dialogs/users/UpdateUserDialog'
-import ResetMultiLoginDialog from '../../components/dialogs/users/ResetMultiLogin'
-import BlockMultiLoginDialog from '../../components/dialogs/users/BlockMultiLoginDialog'
+import CreateOrEditUserDialog from '../../components/dialogs/users/CreateOrEditUserDialog'
+import ToogleMultiDeviceLoginDialog from '../../components/dialogs/users/ToogleMultiDeviceLoginDialog'
 import UpdatePasswordDialog from '../../components/dialogs/users/UpdatePasswordDialog'
-import BlockUserDialog from '../../components/dialogs/users/BlockUserDialog'
-import UnBlockUserDialog from '../../components/dialogs/users/UnBlockUserDialog'
-import MakeAdminDialog from '../../components/dialogs/users/MakeAdminDialog'
-import RemoveAdminDialog from '../../components/dialogs/users/RemoveAdminDialog'
-import UpdateUsePasswordDialog from '../../components/dialogs/users/UpdateUsePasswordDialog'
-import AssignUsersDialog from '../../components/dialogs/users/AssignUsersDialog'
+import ChangePasswordFromAdminDialog from '../../components/dialogs/users/ChangePasswordFromAdminDialog'
+import AssignUsersUnderManagerDialog from '../../components/dialogs/users/AssignUsersUnderManagerDialog'
 import AssignPermissionsToOneUserDialog from '../../components/dialogs/users/AssignPermissionsToOneUserDialog'
 import ExportToExcel from '../../utils/ExportToExcel'
+import { GetUserDto, GetUserForEditDto } from '../../dtos/user.dto'
+import { GetAllUsers, GetUserForEdit } from '../../services/UserServices'
+import ToogleBlockDialog from '../../components/dialogs/users/ToogleBlockDialog'
+import ToogleAdminDialog from '../../components/dialogs/users/ToogleAdminDialog'
 
 export default function UsersPage() {
-    const [hidden, setHidden] = useState('false')
+    const [hidden, setHidden] = useState(false)
     const [user, setUser] = useState<GetUserDto>()
+    const [userForEdit, setUserForEdit] = useState<GetUserForEditDto>()
     const [users, setUsers] = useState<GetUserDto[]>([])
-    const { data, isSuccess, isLoading } = useQuery<AxiosResponse<GetUserDto[]>, BackendError>(["users", hidden], async () => GetUsers({ hidden: hidden, permission: undefined, show_assigned_only: false }))
+    const { data, isSuccess, isLoading } = useQuery<AxiosResponse<GetUserDto[]>, BackendError>(["users", hidden], async () => GetAllUsers({ hidden: hidden, permission: undefined, show_assigned_only: false }))
+    const { data: editdata, isSuccess: isSuccessEditData, refetch: ReftechEditData } = useQuery<AxiosResponse<GetUserForEditDto>, BackendError>(["users"], async () => GetUserForEdit(user?._id || ""), { enabled: false })
     const [sorting, setSorting] = useState<MRT_SortingState>([]);
     const { user: LoggedInUser } = useContext(UserContext)
-    const { setChoice } = useContext(ChoiceContext)
+    const { choice, setChoice } = useContext(ChoiceContext)
     const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
 
     const columns = useMemo<MRT_ColumnDef<GetUserDto>[]>(
@@ -58,7 +56,7 @@ export default function UsersPage() {
                                         color="success"
                                         size="medium"
                                         onClick={() => {
-                                            setChoice({ type: UserChoiceActions.update_user })
+                                            setChoice({ type: UserChoiceActions.create_or_edit_user })
                                             setUser(cell.row.original)
                                         }}>
                                         <Edit />
@@ -66,11 +64,11 @@ export default function UsersPage() {
                                 </Tooltip> :
                                 <Tooltip title="edit">
                                     <IconButton
-                                        disabled={cell.row.original?.created_by.id === cell.row.original._id}
+                                        disabled={cell.row.original?.created_by === cell.row.original._id}
                                         color="success"
                                         size="medium"
                                         onClick={() => {
-                                            setChoice({ type: UserChoiceActions.update_user })
+                                            setChoice({ type: UserChoiceActions.create_or_edit_user })
                                             setUser(cell.row.original)
                                         }}>
                                         <Edit />
@@ -92,7 +90,7 @@ export default function UsersPage() {
                                 </Tooltip> :
                                 <Tooltip title="assign users">
                                     <IconButton
-                                        disabled={cell.row.original?.created_by.id === cell.row.original._id}
+                                        disabled={cell.row.original?.created_by === cell.row.original._id}
                                         color="success"
                                         size="medium"
                                         onClick={() => {
@@ -103,16 +101,16 @@ export default function UsersPage() {
                                     </IconButton>
                                 </Tooltip>}
                             {/* admin icon */}
-                            {LoggedInUser?.created_by.id === cell.row.original._id ?
+                            {LoggedInUser?.created_by === cell.row.original.username ?
                                 null
                                 :
                                 <>
                                     {cell.row.original.is_admin ?
                                         < Tooltip title="Remove admin"><IconButton size="medium"
-                                            disabled={cell.row.original?.created_by.id === cell.row.original._id}
+                                            disabled={cell.row.original?.created_by === cell.row.original._id}
                                             color="error"
                                             onClick={() => {
-                                                setChoice({ type: UserChoiceActions.remove_admin })
+                                                setChoice({ type: UserChoiceActions.toogle_admin })
                                                 setUser(cell.row.original)
 
                                             }}>
@@ -121,9 +119,9 @@ export default function UsersPage() {
                                         </Tooltip>
                                         :
                                         <Tooltip title="make admin"><IconButton size="medium"
-                                            disabled={cell.row.original?.created_by.id === cell.row.original._id}
+                                            disabled={cell.row.original?.created_by === cell.row.original._id}
                                             onClick={() => {
-                                                setChoice({ type: UserChoiceActions.make_admin })
+                                                setChoice({ type: UserChoiceActions.toogle_admin })
                                                 setUser(cell.row.original)
 
                                             }}>
@@ -134,7 +132,7 @@ export default function UsersPage() {
                             }
                             {/* multi login */}
 
-                            {LoggedInUser?.created_by.id === cell.row.original._id ?
+                            {LoggedInUser?.created_by === cell.row.original._id ?
                                 null :
                                 <>
                                     {
@@ -142,9 +140,9 @@ export default function UsersPage() {
                                             <Tooltip title="Block multi login"><IconButton
                                                 size="medium"
                                                 color="error"
-                                                disabled={cell.row.original?.created_by.id === cell.row.original._id}
+                                                disabled={cell.row.original?.created_by === cell.row.original._id}
                                                 onClick={() => {
-                                                    setChoice({ type: UserChoiceActions.block_multi_login })
+                                                    setChoice({ type: UserChoiceActions.toogle_multi_device_login })
                                                     setUser(cell.row.original)
 
                                                 }}
@@ -154,10 +152,10 @@ export default function UsersPage() {
                                             </Tooltip> :
                                             <Tooltip title="Reset multi login">
                                                 <IconButton
-                                                    disabled={cell.row.original?.created_by.id === cell.row.original._id}
+                                                    disabled={cell.row.original?.created_by === cell.row.original._id}
                                                     size="medium"
                                                     onClick={() => {
-                                                        setChoice({ type: UserChoiceActions.reset_multi_login })
+                                                        setChoice({ type: UserChoiceActions.toogle_multi_device_login })
                                                         setUser(cell.row.original)
 
                                                     }}
@@ -169,15 +167,15 @@ export default function UsersPage() {
                                 </>
                             }
                             {/*  block login */}
-                            {LoggedInUser?.created_by.id === cell.row.original._id ?
+                            {LoggedInUser?.created_by === cell.row.original._id ?
                                 null :
                                 <>
                                     {cell.row.original?.is_active ?
                                         <Tooltip title="block"><IconButton
                                             size="medium"
-                                            disabled={cell.row.original?.created_by.id === cell.row.original._id}
+                                            disabled={cell.row.original?.created_by === cell.row.original._id}
                                             onClick={() => {
-                                                setChoice({ type: UserChoiceActions.block_user })
+                                                setChoice({ type: UserChoiceActions.toogle_block_user })
                                                 setUser(cell.row.original)
 
                                             }}
@@ -189,10 +187,10 @@ export default function UsersPage() {
                                         < Tooltip title="unblock">
                                             <IconButton
                                                 color="warning"
-                                                disabled={cell.row.original?.created_by.id === cell.row.original._id}
+                                                disabled={cell.row.original?.created_by === cell.row.original._id}
                                                 size="medium"
                                                 onClick={() => {
-                                                    setChoice({ type: UserChoiceActions.unblock_user })
+                                                    setChoice({ type: UserChoiceActions.toogle_block_user })
                                                     setUser(cell.row.original)
 
                                                 }}>
@@ -203,14 +201,14 @@ export default function UsersPage() {
                                 </>
                             }
 
-                            {LoggedInUser?.created_by.id === cell.row.original._id ?
+                            {LoggedInUser?.created_by === cell.row.original._id ?
                                 null
                                 :
                                 <Tooltip title="Change Password for this user">
                                     <IconButton
-                                        disabled={cell.row.original?.created_by.id === cell.row.original._id} size="medium"
+                                        disabled={cell.row.original?.created_by === cell.row.original._id} size="medium"
                                         onClick={() => {
-                                            setChoice({ type: UserChoiceActions.update_user_password })
+                                            setChoice({ type: UserChoiceActions.change_password_from_admin })
                                             setUser(cell.row.original)
 
                                         }}>
@@ -257,13 +255,13 @@ export default function UsersPage() {
                 filterSelectOptions: data && users.map((i) => { return i.username.toString() }).filter(onlyUnique)
             },
             {
-                accessorKey: 'company',
-                header: 'Company',
+                accessorKey: 'customer',
+                header: 'Customer',
                 size: 320,
                 filterVariant: 'multi-select',
-                Cell: (cell) => <>{cell.row.original.company ? cell.row.original.company.label : ""}</>,
+                Cell: (cell) => <>{cell.row.original.customer ? cell.row.original.customer : ""}</>,
                 filterSelectOptions: data && users.map((i) => {
-                    if (i.company) return i.company.label
+                    if (i.customer) return i.customer
                     return ""
                 }).filter(onlyUnique)
             },
@@ -392,10 +390,23 @@ export default function UsersPage() {
     });
 
     useEffect(() => {
+        if (isSuccessEditData && editdata) {
+            setUserForEdit(editdata.data)
+        }
+    }, [isSuccessEditData])
+
+    useEffect(() => {
         if (isSuccess && data) {
             setUsers(data.data)
         }
     }, [isSuccess, data])
+
+    useEffect(() => {
+        if (user && choice === UserChoiceActions.create_or_edit_user) {
+            ReftechEditData()
+        }
+    }, [choice, user])
+
 
     return (
         <>
@@ -422,11 +433,11 @@ export default function UsersPage() {
                         <Stack direction={'row'} alignItems={'center'}>
                             <input type='checkbox' onChange={(e) => {
                                 if (e.target.checked) {
-                                    setHidden('true')
+                                    setHidden(true)
                                 }
                                 else
-                                    setHidden('false')
-                            }} /> <span style={{ paddingLeft: '5px' }}>Blocked</span>
+                                    setHidden(false)
+                            }} /> <span style={{ paddingLeft: '5px' }}>Show Blocked</span>
                         </Stack >
 
                     </Stack >
@@ -453,7 +464,7 @@ export default function UsersPage() {
                             {
 
                                 <MenuItem onClick={() => {
-                                    setChoice({ type: UserChoiceActions.new_user })
+                                    setChoice({ type: UserChoiceActions.create_or_edit_user })
                                     setAnchorEl(null)
                                 }}
                                 >New User</MenuItem>}
@@ -478,7 +489,7 @@ export default function UsersPage() {
                             <MenuItem disabled={!table.getIsSomeRowsSelected() && !table.getIsAllRowsSelected()} onClick={() => ExportToExcel(table.getSelectedRowModel().rows.map((row) => { return row.original }), "Exported Data")}
                             >Export Selected</MenuItem>
                         </Menu>
-                        <NewUserDialog />
+                        <CreateOrEditUserDialog />
                         <AssignPermissionsToUsersDialog user_ids={table.getSelectedRowModel().rows.map((I) => { return I.original._id })} />
                     </>
                 </Stack >
@@ -491,20 +502,18 @@ export default function UsersPage() {
             {
                 user ?
                     <>
-                        <UpdateUserDialog user={user} />
-                        <ResetMultiLoginDialog id={user._id} />
-                        <BlockMultiLoginDialog id={user._id} />
+
+                        <ToogleMultiDeviceLoginDialog user={user} />
                         <UpdatePasswordDialog />
-                        <BlockUserDialog id={user._id} />
-                        <UnBlockUserDialog id={user._id} />
-                        <MakeAdminDialog id={user._id} />
-                        <RemoveAdminDialog id={user._id} />
-                        <UpdateUsePasswordDialog user={user} />
-                        <AssignUsersDialog user={user} setUser={setUser} />
+                        <ToogleBlockDialog user={user} />
+                        <ToogleAdminDialog user={user} />
+                        <ChangePasswordFromAdminDialog id={user._id} />
+                        <AssignUsersUnderManagerDialog id={user._id} />
                         <AssignPermissionsToOneUserDialog user={user} />
                     </>
                     : null
             }
+            {userForEdit && <CreateOrEditUserDialog user={userForEdit} />}
         </>
 
     )

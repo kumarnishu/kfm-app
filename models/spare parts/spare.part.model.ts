@@ -1,23 +1,23 @@
 import mongoose from "mongoose"
-import { Asset } from "../users/user.model"
+import { Asset, IUser } from "../users/user.model"
 import { IMachine } from "../machines/machine.model"
 
-export type ISpareParts = {
+export type ISparePart = {
     _id: string,
     name: string,
     partno: string,
-    photo: Asset,
+    photos: Asset[],
     compatible_machines: IMachine[]
     price: number,
-    is_active: Boolean,
+    is_active: boolean,
     created_at: Date,
     updated_at: Date,
-    created_by: ISpareParts,
-    updated_by: ISpareParts
+    created_by: IUser,
+    updated_by: IUser
 }
 
 
-const SparePartsSchema = new mongoose.Schema<ISpareParts, mongoose.Model<ISpareParts, {}, {}>, {}>({
+const SparePartSchema = new mongoose.Schema<ISparePart, mongoose.Model<ISparePart, {}, {}>, {}>({
     name: {
         type: String,
         required: true,
@@ -36,7 +36,7 @@ const SparePartsSchema = new mongoose.Schema<ISpareParts, mongoose.Model<ISpareP
             ref: 'Machine'
         }
     ],
-    photo: {
+    photos: [{
         _id: { type: String },
         filename: { type: String },
         public_url: { type: String },
@@ -44,7 +44,7 @@ const SparePartsSchema = new mongoose.Schema<ISpareParts, mongoose.Model<ISpareP
         size: { type: String },
         bucket: { type: String },
         created_at: Date
-    },
+    }],
     price: {
         type: Number, default: 0
     },
@@ -79,4 +79,4 @@ const SparePartsSchema = new mongoose.Schema<ISpareParts, mongoose.Model<ISpareP
     }
 })
 
-export const SpareParts = mongoose.model<ISpareParts, mongoose.Model<ISpareParts, {}, {}>>("SpareParts", SparePartsSchema)
+export const SparePart = mongoose.model<ISparePart, mongoose.Model<ISparePart, {}, {}>>("SparePart", SparePartSchema)

@@ -2,7 +2,7 @@ import mongoose from "mongoose"
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import crypto from "crypto";
-import { ICompany } from "../companies/company.model";
+import { ICustomer } from "../customer/customer.model";
 
 export type Asset = {
   _id: string,
@@ -22,12 +22,12 @@ export type IUser = {
   email: string,
   mobile: string,
   dp: Asset,
-  company:ICompany,
+  customer:ICustomer,
   orginal_password:string,
-  is_admin: Boolean,
-  email_verified: Boolean,
-  mobile_verified: Boolean,
-  is_active: Boolean,
+  is_admin: boolean,
+  email_verified: boolean,
+  mobile_verified: boolean,
+  is_active: boolean,
   last_login: Date,
   multi_login_token: string | null,
   is_multi_login: boolean,
@@ -127,9 +127,9 @@ const UserSchema = new mongoose.Schema<IUser, mongoose.Model<IUser, {}, IUserMet
     required: true,
 
   },
-  company: {
+  customer: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Company'
+    ref: 'Customer'
   },
   created_by: {
     type: mongoose.Schema.Types.ObjectId,

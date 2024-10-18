@@ -10,26 +10,19 @@ import { UserChoiceActions, ChoiceContext } from '../../../contexts/dialogContex
 import { UserContext } from '../../../contexts/userContext';
 import { Signup } from '../../../services/UserServices';
 import { BackendError, Target } from '../../..';
-import AlertBar from '../../snacks/AlertBar';
-import { GetUserDto } from '../../../dtos/users/user.dto';
+import { GetUserDto } from '../../../dtos/user.dto';
+import { AlertContext } from '../../../contexts/alertContext';
 
-type TFormData = {
-  username: string,
-  email: string
-  password: string
-  mobile: string
-  dp: string | Blob | File
-}
 
-function OwnerSignUpForm() {
+function SignUpForm() {
   const goto = useNavigate()
   const { setUser } = useContext(UserContext)
-  const { mutate, data, isLoading, isSuccess, isError, error } = useMutation
+  const { mutate, data, isLoading, isSuccess,  error } = useMutation
     <AxiosResponse<{ user: GetUserDto, token: string }>, BackendError, FormData>
     (Signup)
   const { setChoice } = useContext(ChoiceContext)
 
-  const formik = useFormik<TFormData>({
+  const formik = useFormik({
     initialValues: {
       username: "",
       email: "",
@@ -81,7 +74,7 @@ function OwnerSignUpForm() {
           }
         )
     }),
-    onSubmit: (values: TFormData) => {
+    onSubmit: (values) => {
       let formdata = new FormData()
       formdata.append("username", values.username)
       formdata.append("mobile", values.mobile)
@@ -103,13 +96,19 @@ function OwnerSignUpForm() {
     e.preventDefault();
   };
 
+  const { setAlert } = useContext(AlertContext)
   useEffect(() => {
-    if (isSuccess) {
+    if (isSuccess && data) {
       setUser(data.data.user)
       setChoice({ type: UserChoiceActions.close_user })
-      goto("/")
+      setAlert({ message: "logged in ...", color: "success" })
+      goto("/", { replace: true })
+
     }
-  }, [isSuccess, setUser, goto, data, setChoice])
+    if (error) {
+      setAlert({ message: error.response.data.message, color: 'error' })
+    }
+  }, [isSuccess, data, error])
 
   return (
     <form onSubmit={formik.handleSubmit}>
@@ -217,16 +216,6 @@ function OwnerSignUpForm() {
             }
           }}
         />
-        {
-          isError ? (
-            <AlertBar message={error?.response.data.message} color="error" />
-          ) : null
-        }
-        {
-          isSuccess ? (
-            <AlertBar message="Successfully logged in" color="success" />
-          ) : null
-        }
         <Button variant="contained"
           disabled={Boolean(isLoading)}
           color="primary" type="submit" fullWidth>{Boolean(isLoading) ? <CircularProgress /> : "Register"}</Button>
@@ -235,4 +224,4 @@ function OwnerSignUpForm() {
   )
 }
 
-export default OwnerSignUpForm
+export default SignUpForm

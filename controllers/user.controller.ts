@@ -1,17 +1,22 @@
 import { NextFunction, Request, Response } from 'express';
-import isEmail from "validator/lib/isEmail";
 import { uploadFileToCloud } from '../utils/uploadFile.util';
 import { deleteToken, sendUserToken } from '../middlewares/auth.middleware';
 import { Asset, IUser, User } from '../models/users/user.model';
 import isMongoId from "validator/lib/isMongoId";
+import isEmail from "validator/lib/isEmail";
+import isNumeric from "validator/lib/isNumeric";
 import { destroyFile } from "../utils/destroyFile.util";
 import { sendEmail } from '../utils/sendEmail.util';
 import { FetchAllPermissions } from '../utils/fillAllPermissions';
-import { AssignPermissionForMultipleUserDto, AssignPermissionForOneUserDto, AssignUsersDto, createOrEditUserDto, GetUserDto, IMenu, LoginDto, ResetPasswordDto, UpdatePasswordDto, UpdateProfileDto, VerifyEmailDto } from '../dtos/users/user.dto';
+import { AssignPermissionToOneUserDto, AssignSimilarPermissionToMultipleUsersDto, AssignUsersDto, CreateUserFromExcelDto, GetUserDto, GetUserForEditDto, IMenu, LoginDto, ResetPasswordDto, SendOrVerifyEmailDto, UpdatePasswordDto, UpdateProfileDto } from '../dtos/user.dto';
 import moment from 'moment';
+import { DropDownDto } from '../dtos/dropdown.dto';
+import xlsx from "xlsx";
+import SaveFileOnDisk from '../utils/SaveExcel';
+import { Customer } from '../models/customer/customer.model';
 
 
-export const GetUsers = async (req: Request, res: Response, next: NextFunction) => {
+export const GetAllUsers = async (req: Request, res: Response, next: NextFunction) => {
     let showhidden = req.query.hidden
     let perm = req.query.permission
     let show_assigned_only = req.query.show_assigned_only
@@ -20,10 +25,10 @@ export const GetUsers = async (req: Request, res: Response, next: NextFunction) 
 
     if (show_assigned_only == 'true') {
         let ids = req.user?.assigned_users.map((id) => { return id._id })
-        users = await User.find({ is_active: true, _id: { $in: ids } }).populate("created_by").populate("updated_by").populate("company").populate('assigned_users').sort('-last_login')
+        users = await User.find({ is_active: showhidden == 'false', _id: { $in: ids } }).populate("created_by").populate("updated_by").populate("customer").populate('assigned_users').sort('-last_login')
     }
     else {
-        users = await User.find({ is_active: showhidden == 'false' }).populate("created_by").populate("updated_by").populate("company").populate('assigned_users').sort('-last_login')
+        users = await User.find({ is_active: showhidden == 'false' }).populate("created_by").populate("updated_by").populate("customer").populate('assigned_users').sort('-last_login')
     }
     if (perm) {
         users = users.filter((u) => { return u.assigned_permissions.includes(String(perm)) })
@@ -34,9 +39,7 @@ export const GetUsers = async (req: Request, res: Response, next: NextFunction) 
             username: u.username,
             email: u.email,
             mobile: u.mobile,
-            company: u.company && {
-                id: u.company._id, label: u.company.name, value: u.company.name
-            },
+            customer: u.customer ? u.customer.name : "",
             dp: u.dp?.public_url || "",
             orginal_password: u.orginal_password,
             is_admin: u.is_admin,
@@ -46,33 +49,55 @@ export const GetUsers = async (req: Request, res: Response, next: NextFunction) 
             last_login: moment(u.last_login).format("lll"),
             is_multi_login: u.is_multi_login,
             assigned_users: u.assigned_users.map((u) => {
-                return {
-                    id: u._id, label: u.username, value: u.username
-                }
-            }),
+                return u.username
+            }).toString(),
             assigned_permissions: u.assigned_permissions,
             created_at: moment(u.created_at).format("DD/MM/YYYY"),
             updated_at: moment(u.updated_at).format("DD/MM/YYYY"),
-            created_by: { id: u.created_by._id, label: u.created_by.username, value: u.created_by.username },
-            updated_by: { id: u.updated_by._id, label: u.updated_by.username, value: u.updated_by.username },
+            created_by: u.created_by.username,
+            updated_by: u.updated_by.username
         }
     })
     return res.status(200).json(result)
 }
 
+export const GetUsersForDropdown = async (req: Request, res: Response, next: NextFunction) => {
+    let showhidden = req.query.hidden
+    let perm = req.query.permission
+    let show_assigned_only = req.query.show_assigned_only
+    let result: DropDownDto[] = []
+    let users: IUser[] = [];
+
+    if (show_assigned_only == 'true') {
+        let ids = req.user?.assigned_users.map((id) => { return id._id })
+        users = await User.find({ is_active: showhidden == 'false', _id: { $in: ids } }).populate("created_by").populate("updated_by").populate("customer").populate('assigned_users').sort('-last_login')
+    }
+    else {
+        users = await User.find({ is_active: showhidden == 'false' }).populate("created_by").populate("updated_by").populate("customer").populate('assigned_users').sort('-last_login')
+    }
+    if (perm) {
+        users = users.filter((u) => { return u.assigned_permissions.includes(String(perm)) })
+    }
+    result = users.map((u) => {
+        return {
+            id: u._id,
+            label: u.username,
+            value: u.username
+        }
+    })
+    return res.status(200).json(result)
+}
 
 export const GetProfile = async (req: Request, res: Response, next: NextFunction) => {
     let result: GetUserDto | null = null;
-    const user = await User.findById(req.user?._id).populate("created_by").populate("company").populate("updated_by").populate('assigned_users')
+    const user = await User.findById(req.user?._id).populate("created_by").populate("customer").populate("updated_by").populate('assigned_users')
     if (user)
         result = {
             _id: user._id,
             username: user.username,
             email: user.email,
             mobile: user.mobile,
-            company: user.company && {
-                id: user.company._id, label: user.company.name, value: user.company.name
-            },
+            customer: user.customer && user.customer.name || "",
             dp: user.dp?.public_url || "",
             orginal_password: user.orginal_password,
             is_admin: user.is_admin,
@@ -82,28 +107,51 @@ export const GetProfile = async (req: Request, res: Response, next: NextFunction
             last_login: moment(user.last_login).calendar(),
             is_multi_login: user.is_multi_login,
             assigned_users: user.assigned_users.map((u) => {
-                return {
-                    id: user._id, label: user.username, value: user.username
-                }
-            }),
+                return user.username
+            }).toString(),
             assigned_permissions: user.assigned_permissions,
             created_at: moment(user.created_at).format("DD/MM/YYYY"),
             updated_at: moment(user.updated_at).format("DD/MM/YYYY"),
-            created_by: { id: user.created_by._id, label: user.created_by.username, value: user.created_by.username },
-            updated_by: { id: user.updated_by._id, label: user.updated_by.username, value: user.updated_by.username },
+            created_by: user.created_by.username,
+            updated_by: user.updated_by.username
         }
     res.status(200).json({ user: result, token: req.cookies.accessToken })
 }
 
+export const GetAssignedUsersForEdit = async (req: Request, res: Response, next: NextFunction) => {
+    let result: string[] = [];
+    const id = req.params.id;
+    if (!isMongoId(id)) return res.status(400).json({ message: "user id not valid" })
+    let user = await User.findById(id).populate('created_by')
+    if (!user) {
+        return res.status(404).json({ message: "user not found" })
+    }
+    let users = await User.find({ _id: id })
+    result = users.map((u) => { return u._id })
 
-//post/put/patch/delete
+    res.status(200).json(result)
+}
+export const GetUserForEdit = async (req: Request, res: Response, next: NextFunction) => {
+    let result: GetUserForEditDto | null = null;
+    const user = await User.findById(req.user?._id).populate("created_by").populate("customer").populate("updated_by").populate('assigned_users')
+    if (user)
+        result = {
+            _id: user._id,
+            username: user.username,
+            email: user.email,
+            mobile: user.mobile,
+            customer: user.customer && user.customer._id || "",
+            password: user.orginal_password,
+        }
+    res.status(200).json(result)
+}
 export const SignUp = async (req: Request, res: Response, next: NextFunction) => {
     let result: GetUserDto | null = null;
     let users = await User.find()
     if (users.length > 0)
         return res.status(400).json({ message: "not allowed" })
 
-    let { username, email, password, mobile } = req.body as createOrEditUserDto
+    let { username, email, password, mobile } = req.body as GetUserForEditDto
     // validations
     if (!username || !email || !password || !mobile)
         return res.status(400).json({ message: "fill all the required fields" });
@@ -139,9 +187,7 @@ export const SignUp = async (req: Request, res: Response, next: NextFunction) =>
         email,
         mobile,
         is_admin: true,
-        dp,
-        client_id: username.split(" ")[0] + `${Number(new Date())}`,
-        client_data_path: username.split(" ")[0] + `${Number(new Date())}`
+        dp
 
     })
     owner.updated_by = owner
@@ -150,7 +196,7 @@ export const SignUp = async (req: Request, res: Response, next: NextFunction) =>
     owner.updated_at = new Date()
     sendUserToken(res, owner.getAccessToken())
     await owner.save()
-    owner = await User.findById(owner._id).populate("created_by").populate("company").populate('assigned_users').populate("updated_by") || owner
+    owner = await User.findById(owner._id).populate("created_by").populate("customer").populate('assigned_users').populate("updated_by") || owner
     let token = owner.getAccessToken()
     result = {
         _id: owner._id,
@@ -160,27 +206,26 @@ export const SignUp = async (req: Request, res: Response, next: NextFunction) =>
         dp: owner.dp?.public_url || "",
         orginal_password: owner.orginal_password,
         is_admin: owner.is_admin,
+        customer: "",
         email_verified: owner.email_verified,
         mobile_verified: owner.mobile_verified,
         is_active: owner.is_active,
         last_login: moment(owner.last_login).calendar(),
         is_multi_login: owner.is_multi_login,
         assigned_users: owner.assigned_users.map((u) => {
-            return {
-                id: owner._id, label: owner.username, value: owner.username
-            }
-        }),
+            return owner.username
+        }).toString(),
         assigned_permissions: owner.assigned_permissions,
         created_at: moment(owner.created_at).format("DD/MM/YYYY"),
         updated_at: moment(owner.updated_at).format("DD/MM/YYYY"),
-        created_by: { id: owner.created_by._id, label: owner.created_by.username, value: owner.created_by.username },
-        updated_by: { id: owner.updated_by._id, label: owner.updated_by.username, value: owner.updated_by.username },
+        created_by: owner.created_by.username,
+        updated_by: owner.updated_by.username,
     }
     res.status(201).json({ user: result, token: token })
 }
 
 export const NewUser = async (req: Request, res: Response, next: NextFunction) => {
-    let { username, email, password, mobile, company } = req.body as createOrEditUserDto;
+    let { username, email, password, mobile, customer } = req.body as GetUserForEditDto;
     // validations
     if (!username || !email || !password || !mobile)
         return res.status(400).json({ message: "fill all the required fields" });
@@ -229,8 +274,8 @@ export const NewUser = async (req: Request, res: Response, next: NextFunction) =
     user.updated_at = new Date()
 
     await user.save()
-    if (company) {
-        await User.findByIdAndUpdate(user._id, { company })
+    if (customer) {
+        await User.findByIdAndUpdate(user._id, { customer })
     }
     res.status(201).json({ message: "success" })
 }
@@ -245,18 +290,18 @@ export const Login = async (req: Request, res: Response, next: NextFunction) => 
 
     let user = await User.findOne({
         username: String(username).toLowerCase().trim(),
-    }).select("+password").populate("created_by").populate("company").populate('assigned_users').populate("updated_by")
+    }).select("+password").populate("created_by").populate("customer").populate('assigned_users').populate("updated_by")
 
     if (!user) {
         user = await User.findOne({
             mobile: String(username).toLowerCase().trim(),
-        }).select("+password").populate("created_by").populate("company").populate('assigned_users').populate("updated_by")
+        }).select("+password").populate("created_by").populate("customer").populate('assigned_users').populate("updated_by")
 
     }
     if (!user) {
         user = await User.findOne({
             email: String(username).toLowerCase().trim(),
-        }).select("+password").populate("created_by").populate("company").populate('assigned_users').populate("updated_by")
+        }).select("+password").populate("created_by").populate("customer").populate('assigned_users').populate("updated_by")
         if (user)
             if (!user.email_verified)
                 return res.status(403).json({ message: "please verify email id before login" })
@@ -288,24 +333,20 @@ export const Login = async (req: Request, res: Response, next: NextFunction) => 
         dp: user.dp?.public_url || "",
         orginal_password: user.orginal_password,
         is_admin: user.is_admin,
-        company: user.company && {
-            id: user.company._id, label: user.company.name, value: user.company.name
-        },
+        customer: user.customer ? user.customer.name : "",
         email_verified: user.email_verified,
         mobile_verified: user.mobile_verified,
         is_active: user.is_active,
         last_login: moment(user.last_login).calendar(),
         is_multi_login: user.is_multi_login,
         assigned_users: user.assigned_users.map((u) => {
-            return {
-                id: u._id, label: u.username, value: u.username
-            }
-        }),
+            return u.username
+        }).toString(),
         assigned_permissions: user.assigned_permissions,
         created_at: moment(user.created_at).format("DD/MM/YYYY"),
         updated_at: moment(user.updated_at).format("DD/MM/YYYY"),
-        created_by: { id: user.created_by._id, label: user.created_by.username, value: user.created_by.username },
-        updated_by: { id: user.updated_by._id, label: user.updated_by.username, value: user.updated_by.username },
+        created_by: user.created_by.username,
+        updated_by: user.updated_by.username
     }
     res.status(200).json({ user: result, token: token })
 }
@@ -320,7 +361,7 @@ export const Logout = async (req: Request, res: Response, next: NextFunction) =>
     res.status(200).json({ message: "logged out" })
 }
 
-export const AssignUsers = async (req: Request, res: Response, next: NextFunction) => {
+export const AssignUsersUnderManager = async (req: Request, res: Response, next: NextFunction) => {
     const id = req.params.id;
     const { ids } = req.body as AssignUsersDto
     if (!isMongoId(id)) return res.status(400).json({ message: "user id not valid" })
@@ -351,7 +392,7 @@ export const UpdateUser = async (req: Request, res: Response, next: NextFunction
     if (!user) {
         return res.status(404).json({ message: "user not found" })
     }
-    let { email, username, mobile, company } = req.body as createOrEditUserDto;
+    let { email, username, mobile, customer } = req.body as GetUserForEditDto;
     if (!username || !email || !mobile)
         return res.status(400).json({ message: "fill all the required fields" });
     //check username
@@ -392,9 +433,9 @@ export const UpdateUser = async (req: Request, res: Response, next: NextFunction
     }
     let mobileverified = user.mobile_verified
     let emaileverified = user.email_verified
-    let com = user.company && user.company._id;
-    if (company)
-        com = company
+    let com = user.customer && user.customer._id;
+    if (customer)
+        com = customer
     if (email !== user.email)
         emaileverified = false
     if (mobile !== user.mobile)
@@ -403,7 +444,7 @@ export const UpdateUser = async (req: Request, res: Response, next: NextFunction
         username,
         email,
         mobile,
-        company: com,
+        customer: com,
         email_verified: emaileverified,
         mobile_verified: mobileverified,
         dp,
@@ -427,13 +468,11 @@ export const UpdateProfile = async (req: Request, res: Response, next: NextFunct
         if (await User.findOne({ mobile: mobile }))
             return res.status(403).json({ message: `${mobile} already exists` });
     }
-    //check email
     if (email !== user.email) {
         if (await User.findOne({ email: String(email).toLowerCase().trim() }))
             return res.status(403).json({ message: `${email} already exists` });
     }
 
-    //handle dp
     let dp = user.dp;
     if (req.file) {
         const allowedFiles = ["image/png", "image/jpeg", "image/gif"];
@@ -453,17 +492,10 @@ export const UpdateProfile = async (req: Request, res: Response, next: NextFunct
             return res.status(500).json({ message: "file uploading error" })
         }
     }
-    let mobileverified = user.mobile_verified
-    let emaileverified = user.email_verified
-    if (email !== user.email)
-        emaileverified = false
-    if (mobile !== user.mobile)
-        mobileverified = false
+
     await User.findByIdAndUpdate(user.id, {
         email,
         mobile,
-        email_verified: emaileverified,
-        mobile_verified: mobileverified,
         dp,
         updated_at: new Date(),
         updated_by: user
@@ -471,7 +503,7 @@ export const UpdateProfile = async (req: Request, res: Response, next: NextFunct
     return res.status(200).json({ message: "profile updated" })
 }
 
-export const updatePassword = async (req: Request, res: Response, next: NextFunction) => {
+export const UpdatePassword = async (req: Request, res: Response, next: NextFunction) => {
     const { oldPassword, newPassword, confirmPassword } = req.body as UpdatePasswordDto
     if (!oldPassword || !newPassword || !confirmPassword)
         return res.status(400).json({ message: "please fill required fields" })
@@ -492,7 +524,7 @@ export const updatePassword = async (req: Request, res: Response, next: NextFunc
     res.status(200).json({ message: "password updated" });
 }
 
-export const resetUserPassword = async (req: Request, res: Response, next: NextFunction) => {
+export const ChangePasswordFromAdmin = async (req: Request, res: Response, next: NextFunction) => {
     const { newPassword, confirmPassword } = req.body as ResetPasswordDto
     if (!newPassword || !confirmPassword)
         return res.status(400).json({ message: "please fill required fields" })
@@ -512,54 +544,43 @@ export const resetUserPassword = async (req: Request, res: Response, next: NextF
     res.status(200).json({ message: "password updated" });
 }
 
-export const MakeAdmin = async (req: Request, res: Response, next: NextFunction) => {
+
+export const ToogleAdmin = async (req: Request, res: Response, next: NextFunction) => {
     const id = req.params.id;
     if (!isMongoId(id)) return res.status(400).json({ message: "user id not valid" })
     let user = await User.findById(id)
     if (!user) {
         return res.status(404).json({ message: "user not found" })
     }
-    if (user.is_admin)
-        return res.status(404).json({ message: "already a admin" })
-    user.is_admin = true
+    if (user.created_by._id.valueOf() === id)
+        return res.status(403).json({ message: "not allowed contact developer" })
+    user.is_admin = !user.is_admin
     if (req.user) {
         user.updated_by = user
     }
     await user.save();
-    res.status(200).json({ message: "admin role provided successfully" });
+    res.status(200).json({ message: "success" });
 }
 
 
 
-export const AllowMultiLogin = async (req: Request, res: Response, next: NextFunction) => {
+export const ToogleMultiDeviceLogin = async (req: Request, res: Response, next: NextFunction) => {
     const id = req.params.id;
     if (!isMongoId(id)) return res.status(400).json({ message: "user id not valid" })
     let user = await User.findById(id)
     if (!user) {
         return res.status(404).json({ message: "user not found" })
     }
-    user.is_multi_login = true
-    user.multi_login_token = null
+    user.is_multi_login = !user.is_multi_login
+    if (user.is_multi_login)
+        user.multi_login_token = null
     if (req.user)
         user.updated_by = req.user
     await user.save();
-    res.status(200).json({ message: "multi login allowed " });
+    res.status(200).json({ message: "success" });
 }
-export const BlockMultiLogin = async (req: Request, res: Response, next: NextFunction) => {
-    const id = req.params.id;
-    if (!isMongoId(id)) return res.status(400).json({ message: "user id not valid" })
-    let user = await User.findById(id)
-    if (!user) {
-        return res.status(404).json({ message: "user not found" })
-    }
-    user.is_multi_login = false
-    user.multi_login_token = null
-    if (req.user)
-        user.updated_by = req.user
-    await user.save();
-    res.status(200).json({ message: "multi login blocked " });
-}
-export const BlockUser = async (req: Request, res: Response, next: NextFunction) => {
+
+export const ToogleBlockUser = async (req: Request, res: Response, next: NextFunction) => {
     //update role of user
     const id = req.params.id;
     if (!isMongoId(id)) return res.status(400).json({ message: "user id not valid" })
@@ -567,63 +588,21 @@ export const BlockUser = async (req: Request, res: Response, next: NextFunction)
     if (!user) {
         return res.status(404).json({ message: "user not found" })
     }
-    if (!user.is_active)
-        return res.status(404).json({ message: "user already blocked" })
 
-    if (String(user.created_by._id) === String(user._id))
-        return res.status(403).json({ message: "not allowed contact crm administrator" })
+    if (user.created_by._id.valueOf() === id)
+        return res.status(403).json({ message: "not allowed contact developer" })
     if (String(user._id) === String(req.user?._id))
         return res.status(403).json({ message: "not allowed this operation here, because you may block yourself" })
-    user.is_active = false
+    user.is_active = !user.is_active
     if (req.user) {
         user.updated_by = user
     }
     await user.save();
-    res.status(200).json({ message: "user blocked successfully" });
+    res.status(200).json({ message: "success" });
 }
 
-export const UnBlockUser = async (req: Request, res: Response, next: NextFunction) => {
-    const id = req.params.id;
-    if (!isMongoId(id)) return res.status(400).json({ message: "user id not valid" })
-    let user = await User.findById(id)
-    if (!user) {
-        return res.status(404).json({ message: "user not found" })
-    }
-    if (user.is_active)
-        return res.status(404).json({ message: "user is already active" })
-    user.is_active = true
-    if (req.user) {
-        user.updated_by = user
-    }
-    await user.save();
-    res.status(200).json({ message: "user unblocked successfully" });
-}
-
-
-export const RemoveAdmin = async (req: Request, res: Response, next: NextFunction) => {
-    const id = req.params.id;
-    if (!isMongoId(id)) return res.status(400).json({ message: "user id not valid" })
-    let user = await User.findById(id).populate('created_by')
-    if (!user) {
-        return res.status(404).json({ message: "user not found" })
-    }
-    if (String(user.created_by._id) === String(user._id))
-        return res.status(403).json({ message: "not allowed contact administrator" })
-    if (String(user._id) === String(req.user?._id))
-        return res.status(403).json({ message: "not allowed this operation here, because you may harm yourself" })
-    user = await User.findById(id)
-    if (!user?.is_admin)
-        res.status(400).json({ message: "you are not an admin" });
-    await User.findByIdAndUpdate(id, {
-        is_admin: false,
-        updated_by_username: req.user?.username,
-        updated_by: req.user
-    })
-    res.status(200).json({ message: "admin role removed successfully" });
-}
-
-export const SendPasswordResetMail = async (req: Request, res: Response, next: NextFunction) => {
-    const { email } = req.body as VerifyEmailDto
+export const SendMailForResetPasswordLink = async (req: Request, res: Response, next: NextFunction) => {
+    const { email } = req.body as SendOrVerifyEmailDto
     if (!email) return res.status(400).json({ message: "please provide email id" })
     const userEmail = String(email).toLowerCase().trim();
     if (!isEmail(userEmail))
@@ -678,8 +657,8 @@ export const ResetPassword = async (req: Request, res: Response, next: NextFunct
     await user.save();
     res.status(200).json({ message: "password updated" });
 }
-export const SendVerifyEmail = async (req: Request, res: Response, next: NextFunction) => {
-    const { email } = req.body as VerifyEmailDto
+export const SendEmailVerificationLink = async (req: Request, res: Response, next: NextFunction) => {
+    const { email } = req.body as SendOrVerifyEmailDto
     if (!email)
         return res.status(400).json({ message: "please provide your email id" })
     const userEmail = String(email).toLowerCase().trim();
@@ -730,7 +709,7 @@ export const VerifyEmail = async (req: Request, res: Response, next: NextFunctio
     });
 }
 export const AssignPermissionsToOneUser = async (req: Request, res: Response, next: NextFunction) => {
-    const { permissions, user_id } = req.body as AssignPermissionForOneUserDto
+    const { permissions, user_id } = req.body as AssignPermissionToOneUserDto
 
     if (permissions && permissions.length === 0)
         return res.status(400).json({ message: "please select one permission " })
@@ -746,8 +725,8 @@ export const AssignPermissionsToOneUser = async (req: Request, res: Response, ne
     return res.status(200).json({ message: "successfull" })
 }
 
-export const AssignPermissionsToUsers = async (req: Request, res: Response, next: NextFunction) => {
-    const { permissions, user_ids } = req.body as AssignPermissionForMultipleUserDto
+export const AssignSimilarPermissionToMultipleUsers = async (req: Request, res: Response, next: NextFunction) => {
+    const { permissions, user_ids } = req.body as AssignSimilarPermissionToMultipleUsersDto
 
     if (permissions && permissions.length === 0)
         return res.status(400).json({ message: "please select one permission " })
@@ -769,5 +748,115 @@ export const GetAllPermissions = async (req: Request, res: Response, next: NextF
     let permissions: IMenu[] = [];
     permissions = FetchAllPermissions();
     return res.status(200).json(permissions)
+}
+
+export const CreateUserFromExcel = async (req: Request, res: Response, next: NextFunction) => {
+    let result: CreateUserFromExcelDto[] = []
+    let statusText: string = ""
+    if (!req.file)
+        return res.status(400).json({
+            message: "please provide an Excel file",
+        });
+    if (req.file) {
+        const allowedFiles = ["application/vnd.ms-excel", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "text/csv"];
+        if (!allowedFiles.includes(req.file.mimetype))
+            return res.status(400).json({ message: `${req.file.originalname} is not valid, only excel and csv are allowed to upload` })
+        if (req.file.size > 100 * 1024 * 1024)
+            return res.status(400).json({ message: `${req.file.originalname} is too large limit is :100mb` })
+        const workbook = xlsx.read(req.file.buffer);
+        let workbook_sheet = workbook.SheetNames;
+        let workbook_response: CreateUserFromExcelDto[] = xlsx.utils.sheet_to_json(
+            workbook.Sheets[workbook_sheet[0]]
+        );
+        if (workbook_response.length > 3000) {
+            return res.status(400).json({ message: "Maximum 3000 records allowed at one time" })
+        }
+        for (let i = 0; i < workbook_response.length; i++) {
+            let user = workbook_response[i]
+            let username: string | null = user.username
+            let email: string | null = user.email
+            let password: string | null = user.password
+            let customer: string | null = user.customer
+            let mobile: string | null = user.mobile
+
+            let validated = true
+
+            //important
+            if (!mobile) {
+                validated = false
+                statusText = "required mobile"
+            }
+            if (!email) {
+                validated = false
+                statusText = "required email"
+            }
+            if (!isEmail(email)) {
+                validated = false
+                statusText = "invalid email"
+            }
+            if (!password) {
+                validated = false
+                statusText = "required password"
+            }
+            if (mobile && String(mobile).length !== 10) {
+                validated = false
+                statusText = "mobile must be of 10 digits"
+            }
+            if (!isNumeric(mobile)) {
+                validated = false
+                statusText = "invalid mobile"
+            }
+
+            if (mobile && String(mobile).length !== 10) {
+                validated = false
+                statusText = "invalid mobile"
+            }
+
+            if (await User.findOne({ username: username.trim().toLowerCase() })) {
+                validated = false
+                statusText = "username already exists"
+            }
+            if (await User.findOne({ email: email.trim().toLowerCase() })) {
+                validated = false
+                statusText = "email already exists"
+            }
+            if (await User.findOne({ mobile: mobile.trim().toLowerCase() })) {
+                validated = false
+                statusText = "mobile already exists"
+            }
+            if (validated) {
+                await new User({
+                    username,
+                    email,
+                    password,
+                    mobile,
+                    created_by: req.user,
+                    updated_by: req.user,
+                    updated_at: new Date(Date.now()),
+                    created_at: new Date(Date.now())
+                }).save()
+                statusText = "success"
+            }
+            result.push({
+                ...user,
+                status: statusText
+            })
+        }
+    }
+    return res.status(200).json(result);
+}
+
+export const DownloadExcelTemplateForCreateUsers = async (req: Request, res: Response, next: NextFunction) => {
+    let user: CreateUserFromExcelDto = {
+        username: "abc",
+        email: "abc@gmail.com",
+        password: "h348397efie",
+        customer: 'abc footwear',
+        mobile: '7070705878',
+    }
+    let customers: { name: string }[] = (await Customer.find({ is_active: true })).map((c) => { return { name: c.name } })
+    SaveFileOnDisk([user], customers)
+    let fileName = "CreateUserTemplate.xlsx"
+    return res.download("./file", fileName)
 }
 

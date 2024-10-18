@@ -4,13 +4,8 @@ import { UserContext } from './contexts/userContext'
 import MainDashBoardPage from './dashboards/MainDashBoardPage.tsx'
 import LoginPage from './pages/users/LoginPage.tsx'
 import UsersPage from './pages/users/UsersPage.tsx'
-import MyVisitPage from './pages/visit/MyVisitPage.tsx'
-import VisitAttendencePage from './pages/visit/VisitAttendencePage.tsx'
-import VisitAdminPage from './pages/visit/VisitAdminPage.tsx'
 import ResetPasswordDialog from './components/dialogs/users/ResetPasswordDialog.tsx'
-import VisitDashboard from './dashboards/VisitDashboard.tsx'
 import EmailVerifyPage from './pages/users/EmailVerifyPage.tsx'
-import CompanyPage from './pages/companies/CompanyPage.tsx'
 
 
 
@@ -35,47 +30,7 @@ function AppRoutes() {
                 }
               />
             </Route>}
-          {user?.assigned_permissions.includes('company_menu') &&
-            < Route path="Company" >
-              <Route index
-                element={
-                  <CompanyPage />
-                }
-              />
 
-              <Route
-                path="CompanyPage" element={
-                  <CompanyPage />
-                }
-              />
-            </Route>}
-                
-
-          {user?.assigned_permissions.includes('visits_menu') &&
-            < Route path="Visit" >
-              <Route index
-                element={
-                  <VisitDashboard />
-                }
-              />
-
-              <Route
-                path="MyVisitPage" element={
-                  <MyVisitPage />
-                }
-              />
-              <Route
-                path="VisitAttendencePage" element={
-                  <VisitAttendencePage />
-                }
-              />
-              <Route
-                path="VisitAdminPage" element={
-                  <VisitAdminPage />
-                }
-              />
-
-            </Route>}
         </Route>
       }
 

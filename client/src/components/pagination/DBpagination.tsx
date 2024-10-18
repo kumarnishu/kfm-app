@@ -12,12 +12,13 @@ type Props = {
         limit: number;
         page: number;
         total: number;
-    }>>
+    }>>,
+    refetch: () => void
 }
-function DBPagination({ paginationData, setPaginationData }: Props) {
+function DBPagination({ paginationData, setPaginationData, refetch }: Props) {
     return (
         <>
-            <Stack sx={{bottom: 0, width: '100vw', bgcolor: 'white', right: 0 }} direction={'row'} justifyContent={'space-evenly'} p={1}>
+            <Stack sx={{ bottom: 0, width: '100vw', bgcolor: 'white', right: 0 }} direction={'row'} justifyContent={'space-evenly'} p={1}>
                 <Stack direction={'row'}
                     spacing={2}
                     px={2}
@@ -33,10 +34,11 @@ function DBPagination({ paginationData, setPaginationData }: Props) {
                                 limit: Number(e.target.value)
 
                             })
+                            refetch()
                         }}
                     >
                         {
-                            [10,20,50,100,200,500,1000].map(item => {
+                            [10, 20, 50, 100, 200, 500, 1000].map(item => {
                                 return (<option key={item} value={item}>
                                     {item}
                                 </option>)
@@ -56,6 +58,7 @@ function DBPagination({ paginationData, setPaginationData }: Props) {
                                 ...paginationData,
                                 page: paginationData.page - 1
                             })
+                            refetch()
                         }}
                     >
                         <ArrowBackIcon />
@@ -64,11 +67,14 @@ function DBPagination({ paginationData, setPaginationData }: Props) {
                     <input type="text" id="page" value={paginationData.page}
                         disabled={paginationData.page == paginationData.total}
                         onChange={(e) => {
-                            if (Number(e.target.value) > 0)
+                            if (Number(e.target.value) > 0) {
                                 setPaginationData({
                                     ...paginationData,
                                     page: Number(e.target.value)
                                 })
+                                refetch()
+                            }
+
                         }
                         }
                         style={{ width: '40px' }}
@@ -81,6 +87,7 @@ function DBPagination({ paginationData, setPaginationData }: Props) {
                                 ...paginationData,
                                 page: paginationData.page + 1
                             })
+                            refetch()
                         }}
                     >
                         <ArrowForwardIcon />

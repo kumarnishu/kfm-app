@@ -4,7 +4,7 @@ import { useState } from 'react'
 
 type Props = {
     message: string,
-    color: "error" | "warning" | "success",
+    color: "error" | "warning" | "success" | "info",
     variant?: "filled" | "outlined"
 }
 function AlertBar({ message, color, variant }: Props) {
@@ -13,7 +13,7 @@ function AlertBar({ message, color, variant }: Props) {
         <Snackbar
             open={sent}
             color={color}
-            autoHideDuration={6000}
+            autoHideDuration={3000}
             onClose={() => setSent(false)}
             anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
             message={message}

@@ -1,11 +1,10 @@
 import mongoose from "mongoose"
-import { Asset, IUser } from "../users/user.model"
+import { IUser } from "../users/user.model"
 
-export type IMachine = {
+export type ICustomer = {
     _id: string,
     name: string,
-    model: string,
-    photos: Asset[],
+    address: string,
     is_active: boolean,
     created_at: Date,
     updated_at: Date,
@@ -14,28 +13,18 @@ export type IMachine = {
 }
 
 
-const MachineSchema = new mongoose.Schema<IMachine, mongoose.Model<IMachine, {}, {}>, {}>({
+const CustomerSchema = new mongoose.Schema<ICustomer, mongoose.Model<ICustomer, {}, {}>, {}>({
     name: {
         type: String,
         required: true,
         trim: true,
         lowercase: true,
     },
-    model: {
+    address: {
         type: String,
-        required: true,
         trim: true,
         lowercase: true,
     },
-    photos: [{
-        _id: { type: String },
-        filename: { type: String },
-        public_url: { type: String },
-        content_type: { type: String },
-        size: { type: String },
-        bucket: { type: String },
-        created_at: Date
-    }],
     is_active: {
         type: Boolean,
         default: true,
@@ -67,4 +56,4 @@ const MachineSchema = new mongoose.Schema<IMachine, mongoose.Model<IMachine, {},
     }
 })
 
-export const Machine = mongoose.model<IMachine, mongoose.Model<IMachine, {}, {}>>("Machine", MachineSchema)
+export const Customer = mongoose.model<ICustomer, mongoose.Model<ICustomer, {}, {}>>("Customer", CustomerSchema)
