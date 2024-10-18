@@ -1,4 +1,4 @@
-import { Dialog, DialogContent, DialogTitle, Typography, IconButton, Stack, Button, CircularProgress, MenuItem, Select, FormControl, InputLabel, } from '@mui/material'
+import { Dialog, DialogContent, DialogTitle, Typography, IconButton, Stack, Button, CircularProgress, TextField, } from '@mui/material'
 import { useContext, useEffect, useState } from 'react';
 import { UserChoiceActions, ChoiceContext } from '../../../contexts/dialogContext';
 import { Cancel } from '@mui/icons-material';
@@ -19,7 +19,7 @@ function AssignUsersUnderManagerDialog({ id }: { id: string }) {
 
     const { data: assigned_users, isSuccess: isAssignedUserSuccess } = useQuery<AxiosResponse<string[]>, BackendError>(["users", id], async () => GetAssignedUsersForEdit(id))
 
-    const { data, isSuccess: isUserSuccess } = useQuery<AxiosResponse<DropDownDto[]>, BackendError>("users", async () => GetAllUsersForDropDown({ hidden: false }))
+    const { data, isSuccess: isUserSuccess } = useQuery<AxiosResponse<DropDownDto[]>, BackendError>("dropdown_users", async () => GetAllUsersForDropDown({ hidden: false }))
     const { choice, setChoice } = useContext(ChoiceContext)
     const { mutate, isLoading, isSuccess, error } = useMutation
         <AxiosResponse<string>, BackendError, {
@@ -31,6 +31,7 @@ function AssignUsersUnderManagerDialog({ id }: { id: string }) {
         (AssignUsersUnderManager, {
             onSuccess: () => {
                 queryClient.invalidateQueries('users')
+                queryClient.invalidateQueries('dropdown_users')
             }
         })
     const formik = useFormik<{
@@ -68,18 +69,21 @@ function AssignUsersUnderManagerDialog({ id }: { id: string }) {
         }
     }, [assigned_users])
 
+
     const { setAlert } = useContext(AlertContext)
 
     useEffect(() => {
         if (isSuccess) {
             setChoice({ type: UserChoiceActions.close_user })
-            setAlert({ message: "selected users assigned under manager successfully", color: 'success' })
+            setAlert({ message: "selected users assigned under manager successfully", color: 'info' })
 
         }
         if (error) {
             setAlert({ message: error.response.data.message, color: 'error' })
         }
     }, [isSuccess, error])
+
+
     return (
         <Dialog
             fullWidth
@@ -104,27 +108,28 @@ function AssignUsersUnderManagerDialog({ id }: { id: string }) {
                     </Typography>
                     <Button onClick={() => formik.setValues({ ids: [] })}>Remove Selection</Button>
                     <form onSubmit={formik.handleSubmit}>
-                        <FormControl fullWidth sx={{ pt: 2 }}>
-                            <InputLabel id="users" sx={{ mt: 1 }}>Select Users</InputLabel>
-                            <Select
-                                multiple
-                                id="users"
-                                fullWidth
-                                size='small'
-                                {...formik.getFieldProps('ids')}
-                            >
+                        <TextField
+                            select
+                            SelectProps={{
+                                native: true,
+                                multiple: true
+                            }}
+                            id="users"
+                            fullWidth
+                            label="Select Users"
+                            size='small'
+                            {...formik.getFieldProps('ids')}
+                        >
 
-                                {users && users.map((user, index) => (
-                                    <MenuItem
-
-                                        key={index}
-                                        value={user.id}
-                                    >
-                                        {toTitleCase(user.label)}
-                                    </MenuItem>
-                                ))}
-                            </Select>
-                        </FormControl>
+                            {users && users.map((user, index) => (
+                                <option
+                                    key={index}
+                                    value={user.id}
+                                >
+                                    {toTitleCase(user.label)}
+                                </option>
+                            ))}
+                        </TextField>
                         <Button style={{ padding: 10, marginTop: 10 }} variant="contained" color="primary" type="submit"
                             disabled={Boolean(isLoading)}
                             fullWidth>{Boolean(isLoading) ? <CircularProgress /> : "Assign"}

@@ -9,7 +9,7 @@ function ChangePasswordFromAdminDialog({ id }: { id: string }) {
     const { choice, setChoice } = useContext(ChoiceContext)
     return (
         <>
-            <Dialog open={choice === UserChoiceActions.update_user_password ? true : false}
+            <Dialog open={choice === UserChoiceActions.change_password_from_admin ? true : false}
                 onClose={() => setChoice({ type: UserChoiceActions.close_user })}
             >
                 <IconButton style={{ display: 'inline-block', position: 'absolute', right: '0px' }} color="error" onClick={() => setChoice({ type: UserChoiceActions.close_user })}>

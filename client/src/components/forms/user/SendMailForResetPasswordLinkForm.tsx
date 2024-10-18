@@ -10,7 +10,7 @@ import { UserChoiceActions, ChoiceContext } from '../../../contexts/dialogContex
 import { UserContext } from '../../../contexts/userContext';
 import { BackendError } from '../../..';
 import { SendMailForResetPasswordLink } from '../../../services/UserServices';
-import { AlertContext } from '../../../contexts/alertContext';
+import AlertBar from '../../snacks/AlertBar';
 
 
 
@@ -41,22 +41,19 @@ function SendMailForResetPasswordLinkForm() {
       mutate(values)
     },
   });
-  const { setAlert } = useContext(AlertContext)
 
   useEffect(() => {
     if (isSuccess) {
       setChoice({ type: UserChoiceActions.close_user })
-      setAlert({ message: "reset password link sent to your provided email", color: "success" })
       goto("/", { replace: true })
 
     }
-    if (error) {
-      setAlert({ message: error.response.data.message, color: 'error' })
-    }
-  }, [isSuccess, error])
+   
+  }, [isSuccess])
   return (
     <form onSubmit={formik.handleSubmit}>
-
+      {isSuccess && <AlertBar message="reset password link sent to your provided email" color='success' />}
+      {error && <AlertBar message={error.response.data.message} color='error' />}
       <Stack
         direction="column"
         pt={2}

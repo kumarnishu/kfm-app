@@ -12,7 +12,7 @@ import { UserContext } from '../../../contexts/userContext';
 import { Login } from '../../../services/UserServices';
 import { BackendError } from '../../..';
 import { GetUserDto } from '../../../dtos/user.dto';
-import { AlertContext } from '../../../contexts/alertContext';
+import AlertBar from '../../snacks/AlertBar';
 
 function LoginForm() {
   const goto = useNavigate()
@@ -56,25 +56,24 @@ function LoginForm() {
     e.preventDefault()
   };
 
-  const { setAlert } = useContext(AlertContext)
 
   useEffect(() => {
     if (isSuccess && data) {
       setUser(data.data.user)
       setChoice({ type: UserChoiceActions.close_user })
-      setAlert({ message: "logged in ...", color: "success" })
       goto("/", { replace: true })
 
     }
-    if (error) {
-      setAlert({ message: error.response.data.message, color: 'error' })
-    }
+   
   }, [isSuccess, data, error])
 
 
   return (
     <>
-     <form onSubmit={formik.handleSubmit}>
+      {isSuccess && <AlertBar message="logged in ..." color='success' />}
+      {error && <AlertBar message={error.response.data.message} color='error' />}
+
+      <form onSubmit={formik.handleSubmit}>
 
         <Stack
           direction="column"

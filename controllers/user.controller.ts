@@ -30,7 +30,7 @@ export const GetAllUsers = async (req: Request, res: Response, next: NextFunctio
     else {
         users = await User.find({ is_active: showhidden == 'false' }).populate("created_by").populate("updated_by").populate("customer").populate('assigned_users').sort('-last_login')
     }
-    if (perm) {
+    if (perm != 'undefined') {
         users = users.filter((u) => { return u.assigned_permissions.includes(String(perm)) })
     }
     result = users.map((u) => {
@@ -75,7 +75,7 @@ export const GetUsersForDropdown = async (req: Request, res: Response, next: Nex
     else {
         users = await User.find({ is_active: showhidden == 'false' }).populate("created_by").populate("updated_by").populate("customer").populate('assigned_users').sort('-last_login')
     }
-    if (perm) {
+    if (perm != 'undefined') {
         users = users.filter((u) => { return u.assigned_permissions.includes(String(perm)) })
     }
     result = users.map((u) => {
@@ -132,8 +132,14 @@ export const GetAssignedUsersForEdit = async (req: Request, res: Response, next:
     res.status(200).json(result)
 }
 export const GetUserForEdit = async (req: Request, res: Response, next: NextFunction) => {
+    const id = req.params.id;
+    if (!isMongoId(id)) return res.status(400).json({ message: "user id not valid" })
+    let user = await User.findById(id).populate("customer")
+    if (!user) {
+        return res.status(404).json({ message: "user not found" })
+    }
     let result: GetUserForEditDto | null = null;
-    const user = await User.findById(req.user?._id).populate("created_by").populate("customer").populate("updated_by").populate('assigned_users')
+    
     if (user)
         result = {
             _id: user._id,

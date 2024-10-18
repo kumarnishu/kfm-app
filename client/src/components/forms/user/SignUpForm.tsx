@@ -6,12 +6,11 @@ import { useEffect, useContext, useState } from 'react';
 import { useMutation } from 'react-query';
 import { useNavigate } from 'react-router-dom';
 import * as Yup from "yup"
-import { UserChoiceActions, ChoiceContext } from '../../../contexts/dialogContext';
 import { UserContext } from '../../../contexts/userContext';
 import { Signup } from '../../../services/UserServices';
 import { BackendError, Target } from '../../..';
 import { GetUserDto } from '../../../dtos/user.dto';
-import { AlertContext } from '../../../contexts/alertContext';
+import AlertBar from '../../snacks/AlertBar';
 
 
 function SignUpForm() {
@@ -20,7 +19,7 @@ function SignUpForm() {
   const { mutate, data, isLoading, isSuccess,  error } = useMutation
     <AxiosResponse<{ user: GetUserDto, token: string }>, BackendError, FormData>
     (Signup)
-  const { setChoice } = useContext(ChoiceContext)
+
 
   const formik = useFormik({
     initialValues: {
@@ -96,23 +95,20 @@ function SignUpForm() {
     e.preventDefault();
   };
 
-  const { setAlert } = useContext(AlertContext)
   useEffect(() => {
     if (isSuccess && data) {
       setUser(data.data.user)
-      setChoice({ type: UserChoiceActions.close_user })
-      setAlert({ message: "logged in ...", color: "success" })
+
       goto("/", { replace: true })
 
     }
-    if (error) {
-      setAlert({ message: error.response.data.message, color: 'error' })
-    }
-  }, [isSuccess, data, error])
+  
+  }, [isSuccess, data])
 
   return (
     <form onSubmit={formik.handleSubmit}>
-
+      {isSuccess && <AlertBar message="logged in ..." color='success' />}
+      {error && <AlertBar message={error.response.data.message} color='error' />}
       <Stack
         direction="column"
         gap={2}

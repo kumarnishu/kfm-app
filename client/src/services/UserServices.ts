@@ -37,7 +37,7 @@ export const GetAllUsersForDropDown = async ({ hidden, permission, show_assigned
 }
 
 export const GetUserForEdit = async (id: string) => {
-  return await apiClient.get(`users/edit/${id}`)
+  return await apiClient.get(`users/${id}`)
 }
 
 export const GetPermissions = async () => {
@@ -126,8 +126,4 @@ export const AssignSimilarPermissionToMultipleUsers = async ({ body }: {
 
 export const CreateUserFromExcel = async (body: FormData) => {
   return await apiClient.post("create-from-excel/users", body);
-};
-
-export const DownloadExcelTemplateForCreateUsers = async () => {
-  return await apiClient.get("download/template/users");
 };

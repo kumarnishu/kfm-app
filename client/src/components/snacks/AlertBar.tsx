@@ -1,5 +1,6 @@
 import { Alert, Snackbar } from '@mui/material'
-import { useState } from 'react'
+import { useContext, useState } from 'react'
+import { AlertContext } from '../../contexts/alertContext'
 
 
 type Props = {
@@ -8,17 +9,22 @@ type Props = {
     variant?: "filled" | "outlined"
 }
 function AlertBar({ message, color, variant }: Props) {
-    const [sent, setSent] = useState(Boolean(message))
+    const { setAlert } = useContext(AlertContext)
+    const [display, setDisplay] = useState(Boolean(message))
     return (
         <Snackbar
-            open={sent}
+            open={display}
             color={color}
             autoHideDuration={3000}
-            onClose={() => setSent(false)}
-            anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+            onClose={() => {
+                setAlert(undefined)
+                setDisplay(false)
+            }
+            }
+            anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
             message={message}
         >
-            <Alert variant={variant || "filled"} onClose={() => setSent(false)} severity={color} sx={{ width: '100%' }}>
+            <Alert variant={variant || "filled"} onClose={() => setDisplay(false)} severity={color} sx={{ width: '100%' }}>
                 {message}
             </Alert>
         </Snackbar>

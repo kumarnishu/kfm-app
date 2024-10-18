@@ -14,7 +14,7 @@ import { GetCustomersForDropdown } from '../../../services/CustomerServices';
 import { AlertContext } from '../../../contexts/alertContext';
 
 
-function CreateOrEditUserForm({ user }: { user: GetUserForEditDto }) {
+function CreateOrEditUserForm({ user }: { user?: GetUserForEditDto }) {
   const { mutate, isLoading, isSuccess, error } = useMutation
     <AxiosResponse<GetUserDto>, BackendError, { id?: string, body: FormData }>
     (CreateOrEditUser, {
@@ -23,14 +23,15 @@ function CreateOrEditUserForm({ user }: { user: GetUserForEditDto }) {
       }
     })
   const { data: customers } = useQuery<AxiosResponse<DropDownDto[]>, BackendError>("customers", async () => GetCustomersForDropdown({ hidden: false }))
+
   const { setChoice } = useContext(ChoiceContext)
   const formik = useFormik({
     initialValues: {
-      username: user.username || "",
-      email: user?.email || "",
-      mobile: String(user.mobile) || "",
+      username: user ? user.username : "",
+      email: user ? user.email : "",
+      mobile: user ? String(user.mobile) : "",
+      customer: user ? user.customer : "",
       dp: "",
-      customer: user.customer ? user.customer : "",
     },
     validationSchema: Yup.object({
       username: Yup.string()
@@ -87,9 +88,34 @@ function CreateOrEditUserForm({ user }: { user: GetUserForEditDto }) {
   const { setAlert } = useContext(AlertContext)
 
   useEffect(() => {
+    if (user) {
+      formik.setValues(
+        {
+          username: user.username,
+          email: user.email,
+          mobile: String(user.mobile),
+          customer: user.customer,
+          dp: "",
+        })
+    }
+    else {
+      formik.setValues(
+        {
+          username: "",
+          email: "",
+          mobile: "",
+          customer: "",
+          dp: "",
+        })
+    }
+
+  }, [user])
+
+
+  useEffect(() => {
     if (isSuccess) {
       setChoice({ type: UserChoiceActions.close_user })
-      setAlert({ message: user ? "updated user" : "created new user", color: 'success' })
+      setAlert({ message: user ? "updated user" : "created new user", color: 'info' })
 
     }
     if (error) {

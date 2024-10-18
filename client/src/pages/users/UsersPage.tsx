@@ -1,4 +1,4 @@
-import { Avatar, Fade, IconButton, LinearProgress, Menu, MenuItem, Tooltip, Typography } from '@mui/material'
+import { Avatar, Button, Fade, IconButton, LinearProgress, Menu, MenuItem, Tooltip, Typography } from '@mui/material'
 import { Stack } from '@mui/system'
 import { AxiosResponse } from 'axios'
 import { useContext, useEffect, useMemo, useState } from 'react'
@@ -20,21 +20,21 @@ import ChangePasswordFromAdminDialog from '../../components/dialogs/users/Change
 import AssignUsersUnderManagerDialog from '../../components/dialogs/users/AssignUsersUnderManagerDialog'
 import AssignPermissionsToOneUserDialog from '../../components/dialogs/users/AssignPermissionsToOneUserDialog'
 import ExportToExcel from '../../utils/ExportToExcel'
-import { GetUserDto, GetUserForEditDto } from '../../dtos/user.dto'
-import { GetAllUsers, GetUserForEdit } from '../../services/UserServices'
+import { GetUserDto } from '../../dtos/user.dto'
+import { GetAllUsers } from '../../services/UserServices'
 import ToogleBlockDialog from '../../components/dialogs/users/ToogleBlockDialog'
 import ToogleAdminDialog from '../../components/dialogs/users/ToogleAdminDialog'
+import { UserExcelButtons } from '../../components/buttons/UserExcelButtons'
 
 export default function UsersPage() {
     const [hidden, setHidden] = useState(false)
     const [user, setUser] = useState<GetUserDto>()
-    const [userForEdit, setUserForEdit] = useState<GetUserForEditDto>()
     const [users, setUsers] = useState<GetUserDto[]>([])
     const { data, isSuccess, isLoading } = useQuery<AxiosResponse<GetUserDto[]>, BackendError>(["users", hidden], async () => GetAllUsers({ hidden: hidden, permission: undefined, show_assigned_only: false }))
-    const { data: editdata, isSuccess: isSuccessEditData, refetch: ReftechEditData } = useQuery<AxiosResponse<GetUserForEditDto>, BackendError>(["users"], async () => GetUserForEdit(user?._id || ""), { enabled: false })
+
     const [sorting, setSorting] = useState<MRT_SortingState>([]);
     const { user: LoggedInUser } = useContext(UserContext)
-    const { choice, setChoice } = useContext(ChoiceContext)
+    const { setChoice } = useContext(ChoiceContext)
     const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
 
     const columns = useMemo<MRT_ColumnDef<GetUserDto>[]>(
@@ -77,6 +77,8 @@ export default function UsersPage() {
                             }
                             {/* assign user */}
                             {LoggedInUser?._id === cell.row.original._id ?
+
+
                                 <Tooltip title="assign users">
                                     <IconButton
                                         color="success"
@@ -390,22 +392,10 @@ export default function UsersPage() {
     });
 
     useEffect(() => {
-        if (isSuccessEditData && editdata) {
-            setUserForEdit(editdata.data)
-        }
-    }, [isSuccessEditData])
-
-    useEffect(() => {
         if (isSuccess && data) {
             setUsers(data.data)
         }
     }, [isSuccess, data])
-
-    useEffect(() => {
-        if (user && choice === UserChoiceActions.create_or_edit_user) {
-            ReftechEditData()
-        }
-    }, [choice, user])
 
 
     return (
@@ -437,8 +427,10 @@ export default function UsersPage() {
                                 }
                                 else
                                     setHidden(false)
-                            }} /> <span style={{ paddingLeft: '5px' }}>Show Blocked</span>
+                            }} /> <Typography style={{ paddingLeft: '5px' }} variant='h6'>Blocked</Typography>
                         </Stack >
+
+                        <UserExcelButtons />
 
                     </Stack >
                     {/* user menu */}
@@ -466,6 +458,7 @@ export default function UsersPage() {
                                 <MenuItem onClick={() => {
                                     setChoice({ type: UserChoiceActions.create_or_edit_user })
                                     setAnchorEl(null)
+                                    setUser(undefined)
                                 }}
                                 >New User</MenuItem>}
 
@@ -505,6 +498,7 @@ export default function UsersPage() {
 
                         <ToogleMultiDeviceLoginDialog user={user} />
                         <UpdatePasswordDialog />
+                        <CreateOrEditUserDialog id={user._id} />
                         <ToogleBlockDialog user={user} />
                         <ToogleAdminDialog user={user} />
                         <ChangePasswordFromAdminDialog id={user._id} />
@@ -513,7 +507,7 @@ export default function UsersPage() {
                     </>
                     : null
             }
-            {userForEdit && <CreateOrEditUserDialog user={userForEdit} />}
+
         </>
 
     )

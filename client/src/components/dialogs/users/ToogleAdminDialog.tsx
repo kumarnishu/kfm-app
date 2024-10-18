@@ -26,7 +26,7 @@ function ToogleAdminDialog({ user }: { user: GetUserDto }) {
     useEffect(() => {
         if (isSuccess) {
             setChoice({ type: UserChoiceActions.close_user })
-            setAlert({ message: `${user.is_admin ? `Removed Admin Role ` : 'Provided Admin Role '} successfully`, color: 'success' })
+            setAlert({ message: `${user.is_admin ? `Removed Admin Role ` : 'Provided Admin Role '} successfully`, color: 'info' })
 
         }
         if (error) {

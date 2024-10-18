@@ -26,7 +26,7 @@ function ToogleMultiDeviceLoginDialog({ user }: { user: GetUserDto }) {
     useEffect(() => {
         if (isSuccess) {
             setChoice({ type: UserChoiceActions.close_user })
-            setAlert({ message: `${user.is_multi_login ? `Blocked Multi Device Login ` : 'Allowed Multi Device Login '} successfully`, color: 'success' })
+            setAlert({ message: `${user.is_multi_login ? `Blocked Multi Device Login ` : 'Allowed Multi Device Login '} successfully`, color: 'info' })
 
         }
         if (error) {

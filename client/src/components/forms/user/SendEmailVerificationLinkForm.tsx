@@ -11,7 +11,7 @@ import { UserContext } from '../../../contexts/userContext';
 import { queryClient } from '../../../main';
 import { BackendError } from '../../..';
 import { SendEmailVerificationLink } from '../../../services/UserServices';
-import { AlertContext } from '../../../contexts/alertContext';
+import AlertBar from '../../snacks/AlertBar';
 
 
 function SendEmailVerificationLinkForm() {
@@ -45,24 +45,22 @@ function SendEmailVerificationLinkForm() {
   });
 
 
-  const { setAlert } = useContext(AlertContext)
 
   useEffect(() => {
     if (isSuccess) {
       setChoice({ type: UserChoiceActions.close_user })
-      setAlert({ message: "email verification link sent to your provided email", color: 'success' })
       goto("/")
 
     }
-    if (error) {
-      setAlert({ message: error.response.data.message, color: 'error' })
-    }
+ 
   }, [isSuccess, error])
 
 
 
   return (
     <>
+      {isSuccess && <AlertBar message="email verification link sent to your provided email" color='success' />}
+      {error && <AlertBar message={error.response.data.message} color='error' />}
       <form onSubmit={formik.handleSubmit}>
         <Stack
           direction="column"

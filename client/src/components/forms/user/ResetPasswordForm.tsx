@@ -1,5 +1,5 @@
 import { Visibility, VisibilityOff } from '@mui/icons-material';
-import {  Button, CircularProgress, IconButton, InputAdornment, TextField } from '@mui/material';
+import { Button, CircularProgress, IconButton, InputAdornment, TextField } from '@mui/material';
 import { Stack } from '@mui/system';
 import { AxiosResponse } from 'axios';
 import { useFormik } from 'formik';
@@ -11,18 +11,18 @@ import { UserChoiceActions, ChoiceContext } from '../../../contexts/dialogContex
 import { ResetPassword } from '../../../services/UserServices';
 import { BackendError } from '../../..';
 import { queryClient } from '../../../main';
-import { AlertContext } from '../../../contexts/alertContext';
+import AlertBar from '../../snacks/AlertBar';
 
 
 function ResetPasswordForm({ token }: { token: string }) {
   const { setChoice } = useContext(ChoiceContext)
   const goto = useNavigate()
-  const { mutate, isLoading, isSuccess,  error } = useMutation
+  const { mutate, isLoading, isSuccess, error } = useMutation
     <AxiosResponse<string>,
       BackendError,
       { token: string, body: { newPassword: string, confirmPassword: string } }
     >
-    (ResetPassword,{
+    (ResetPassword, {
       onSuccess: () => {
         queryClient.invalidateQueries('users')
       }
@@ -63,25 +63,21 @@ function ResetPasswordForm({ token }: { token: string }) {
     e.preventDefault()
   };
 
-  const { setAlert } = useContext(AlertContext)
 
   useEffect(() => {
-    if (isSuccess ) {
+    if (isSuccess) {
       setChoice({ type: UserChoiceActions.close_user })
-      setAlert({ message: "Reset password successfully", color: "success" })
       goto("/", { replace: true })
 
     }
-    if (error) {
-      setAlert({ message: error.response.data.message, color: 'error' })
-    }
-  }, [isSuccess, error])
+  }, [isSuccess])
 
 
   return (
 
     <form onSubmit={formik.handleSubmit}>
-
+      {isSuccess && <AlertBar message="Reset password successfully" color='success' />}
+      {error && <AlertBar message={error.response.data.message} color='error' />}
       <Stack
         direction="column"
         pt={2}
@@ -93,7 +89,7 @@ function ResetPasswordForm({ token }: { token: string }) {
             formik.touched.newPassword && formik.errors.newPassword ? true : false
           }
           id="newPassword"
-         
+
           label="New Password"
           fullWidth
           helperText={
@@ -120,7 +116,7 @@ function ResetPasswordForm({ token }: { token: string }) {
             formik.touched.confirmPassword && formik.errors.confirmPassword ? true : false
           }
           id="confirmPassword"
-         
+
           label="Confirm Password"
           fullWidth
           helperText={
@@ -141,8 +137,8 @@ function ResetPasswordForm({ token }: { token: string }) {
           }}
           {...formik.getFieldProps('confirmPassword')}
         />
-       
-       
+
+
         <Button variant="contained"
           disabled={Boolean(isLoading)}
           color="primary" type="submit" fullWidth>{Boolean(isLoading) ? <CircularProgress /> : "Reset"}

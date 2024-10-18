@@ -26,7 +26,7 @@ function ToogleBlockDialog({ user }: { user: GetUserDto }) {
     useEffect(() => {
         if (isSuccess) {
             setChoice({ type: UserChoiceActions.close_user })
-            setAlert({ message: `${user.is_active ? `Blocked user ` : 'Activated user '} successfully`, color: 'success' })
+            setAlert({ message: `${user.is_active ? `Blocked user ` : 'Activated user '} successfully`, color: 'info' })
 
         }
         if (error) {

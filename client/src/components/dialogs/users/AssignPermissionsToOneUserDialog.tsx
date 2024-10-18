@@ -86,7 +86,7 @@ function AssignPermissionsToOneUserDialog({ user }: { user: GetUserDto}) {
     useEffect(() => {
         if (isSuccess) {
             setChoice({ type: UserChoiceActions.close_user })
-            setAlert({ message: "selected permissions assigned successfully", color: 'success' })
+            setAlert({ message: "selected permissions assigned successfully", color: 'info' })
 
         }
         if (error) {
