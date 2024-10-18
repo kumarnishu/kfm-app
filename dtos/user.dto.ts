@@ -40,7 +40,7 @@ export type GetUserDto = {
     is_active: boolean,
     last_login: string,
     is_multi_login: boolean,
-    assigned_users: string
+    assigned_users: number
     assigned_permissions: string[],
     created_at: string,
     updated_at: string,

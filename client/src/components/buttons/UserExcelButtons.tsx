@@ -8,6 +8,7 @@ import { Button, CircularProgress, Stack } from "@mui/material"
 import { Download, Upload } from "@mui/icons-material"
 import styled from "styled-components"
 import { saveAs } from 'file-saver';
+import ExportToExcel from "../../utils/ExportToExcel"
 
 
 const FileInput = styled.input`
@@ -17,12 +18,12 @@ color:blue;
 
 
 export function UserExcelButtons() {
-    const { mutate, isLoading, isSuccess, error } = useMutation
+    const { data, mutate, isLoading, isSuccess, error } = useMutation
         <AxiosResponse<any[]>, BackendError, FormData>
         (CreateUserFromExcel)
-
-
+    const { setAlert } = useContext(AlertContext)
     const [file, setFile] = useState<File | null>(null)
+
 
 
     function HandleExport() {
@@ -33,7 +34,7 @@ export function UserExcelButtons() {
     function handleFile() {
         if (file) {
             let formdata = new FormData()
-            formdata.append('file', file)
+            formdata.append('excel', file)
             mutate(formdata)
         }
     }
@@ -43,14 +44,19 @@ export function UserExcelButtons() {
         }
     }, [file])
 
-    const { setAlert } = useContext(AlertContext)
+    useEffect(() => {
+        if (isSuccess) {
+            if (data.data.length > 0)
+                ExportToExcel(data.data, "output.xlsx")
+        }
+    }, [isSuccess, data])
 
+
+  
     useEffect(() => {
         if (isSuccess) {
             setAlert({ message: `Uploaded Successfuly`, color: 'info' })
-
         }
-
         if (error) {
             setAlert({ message: error.response.data.message, color: 'error' })
         }

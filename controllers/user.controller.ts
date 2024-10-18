@@ -50,7 +50,7 @@ export const GetAllUsers = async (req: Request, res: Response, next: NextFunctio
             is_multi_login: u.is_multi_login,
             assigned_users: u.assigned_users.map((u) => {
                 return u.username
-            }).toString(),
+            }).length,
             assigned_permissions: u.assigned_permissions,
             created_at: moment(u.created_at).format("DD/MM/YYYY"),
             updated_at: moment(u.updated_at).format("DD/MM/YYYY"),
@@ -108,7 +108,7 @@ export const GetProfile = async (req: Request, res: Response, next: NextFunction
             is_multi_login: user.is_multi_login,
             assigned_users: user.assigned_users.map((u) => {
                 return user.username
-            }).toString(),
+            }).length,
             assigned_permissions: user.assigned_permissions,
             created_at: moment(user.created_at).format("DD/MM/YYYY"),
             updated_at: moment(user.updated_at).format("DD/MM/YYYY"),
@@ -139,7 +139,7 @@ export const GetUserForEdit = async (req: Request, res: Response, next: NextFunc
         return res.status(404).json({ message: "user not found" })
     }
     let result: GetUserForEditDto | null = null;
-    
+
     if (user)
         result = {
             _id: user._id,
@@ -220,7 +220,7 @@ export const SignUp = async (req: Request, res: Response, next: NextFunction) =>
         is_multi_login: owner.is_multi_login,
         assigned_users: owner.assigned_users.map((u) => {
             return owner.username
-        }).toString(),
+        }).length,
         assigned_permissions: owner.assigned_permissions,
         created_at: moment(owner.created_at).format("DD/MM/YYYY"),
         updated_at: moment(owner.updated_at).format("DD/MM/YYYY"),
@@ -347,7 +347,7 @@ export const Login = async (req: Request, res: Response, next: NextFunction) => 
         is_multi_login: user.is_multi_login,
         assigned_users: user.assigned_users.map((u) => {
             return u.username
-        }).toString(),
+        }).length,
         assigned_permissions: user.assigned_permissions,
         created_at: moment(user.created_at).format("DD/MM/YYYY"),
         updated_at: moment(user.updated_at).format("DD/MM/YYYY"),

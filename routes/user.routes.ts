@@ -32,8 +32,8 @@ router.patch("/password/reset/:token", ResetPassword)
 router.route("/permissions").get(isAuthenticatedUser, GetAllPermissions).post(isAuthenticatedUser, AssignSimilarPermissionToMultipleUsers)
 router.route("/permissions/one").post(isAuthenticatedUser, AssignPermissionsToOneUser)
 router.route("/create-from-excel/users")
-    .post(isAuthenticatedUser, CreateUserFromExcel)
-router.get("/download/template/users", upload.single("excel"), isAuthenticatedUser, DownloadExcelTemplateForCreateUsers)
+    .post(isAuthenticatedUser, upload.single("excel"), CreateUserFromExcel)
+router.get("/download/template/users",  isAuthenticatedUser, DownloadExcelTemplateForCreateUsers)
 router.get("/assigned/users/edit/:id", isAuthenticatedUser, GetAssignedUsersForEdit)
 
 export default router;
