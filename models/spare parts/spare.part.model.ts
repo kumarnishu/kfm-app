@@ -6,7 +6,7 @@ export type ISparePart = {
     _id: string,
     name: string,
     partno: string,
-    photos: Asset[],
+    photo: Asset,
     compatible_machines: IMachine[]
     price: number,
     is_active: boolean,
@@ -36,7 +36,7 @@ const SparePartSchema = new mongoose.Schema<ISparePart, mongoose.Model<ISparePar
             ref: 'Machine'
         }
     ],
-    photos: [{
+    photo: {
         _id: { type: String },
         filename: { type: String },
         public_url: { type: String },
@@ -44,7 +44,7 @@ const SparePartSchema = new mongoose.Schema<ISparePart, mongoose.Model<ISparePar
         size: { type: String },
         bucket: { type: String },
         created_at: Date
-    }],
+    },
     price: {
         type: Number, default: 0
     },

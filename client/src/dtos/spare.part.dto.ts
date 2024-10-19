@@ -15,7 +15,7 @@ export type GetSparePartDto = {
     _id: string,
     name: string,
     partno: string,
-    photos: string[],
+    photo: string,
     compatible_machines: string,
     is_active: boolean,
     created_at: string,

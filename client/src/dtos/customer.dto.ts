@@ -1,5 +1,5 @@
 export type GetCustomerForEditDto = {
-    _id?: string,
+    _id?:string,
     name: string,
     address: string,
 }

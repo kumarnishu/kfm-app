@@ -5,7 +5,7 @@ export type IMachine = {
     _id: string,
     name: string,
     model: string,
-    photos: Asset[],
+    photo: Asset,
     is_active: boolean,
     created_at: Date,
     updated_at: Date,
@@ -27,7 +27,7 @@ const MachineSchema = new mongoose.Schema<IMachine, mongoose.Model<IMachine, {},
         trim: true,
         lowercase: true,
     },
-    photos: [{
+    photo: {
         _id: { type: String },
         filename: { type: String },
         public_url: { type: String },
@@ -35,7 +35,7 @@ const MachineSchema = new mongoose.Schema<IMachine, mongoose.Model<IMachine, {},
         size: { type: String },
         bucket: { type: String },
         created_at: Date
-    }],
+    },
     is_active: {
         type: Boolean,
         default: true,

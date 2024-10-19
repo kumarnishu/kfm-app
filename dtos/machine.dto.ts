@@ -14,7 +14,7 @@ export type GetMachineDto = {
     _id: string,
     name: string,
     model: string,
-    photos: string[],
+    photo: string,
     is_active: boolean,
     created_at: string,
     updated_at: string,

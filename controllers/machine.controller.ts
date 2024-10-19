@@ -188,6 +188,6 @@ export const DownloadExcelTemplateForCreateMachines = async (req: Request, res: 
     return res.download("./file", fileName)
 }
 
-export const UploadMachinePhotos = async (req: Request, res: Response, next: NextFunction) => {
+export const UploadMachinePhoto = async (req: Request, res: Response, next: NextFunction) => {
     
 }

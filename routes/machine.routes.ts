@@ -2,7 +2,7 @@ import express from "express";
 import multer from "multer";
 
 import { isAuthenticatedUser } from "../middlewares/auth.middleware";
-import { CreateMachine, CreateMachineFromExcel, DownloadExcelTemplateForCreateMachines, GetAllMachines, GetMachineForEdit, GetMachinesForDropdown, ToogleBlockMachine, UpdateMachine, UploadMachinePhotos } from "../controllers/machine.controller";
+import { CreateMachine, CreateMachineFromExcel, DownloadExcelTemplateForCreateMachines, GetAllMachines, GetMachineForEdit, GetMachinesForDropdown, ToogleBlockMachine, UpdateMachine, UploadMachinePhoto } from "../controllers/machine.controller";
 
 export const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 1024 * 1024 * 50 } })
 
@@ -18,5 +18,5 @@ router.route("/create-from-excel/machines")
     .post(isAuthenticatedUser, CreateMachineFromExcel)
 router.get("/download/template/machines", isAuthenticatedUser, DownloadExcelTemplateForCreateMachines)
 router.route("/upload/machine-photos")
-    .post(isAuthenticatedUser, upload.array('media', 4), UploadMachinePhotos)
+    .post(isAuthenticatedUser, upload.single('photo'), UploadMachinePhoto)
 export default router;

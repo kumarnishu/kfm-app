@@ -202,6 +202,6 @@ export const DownloadExcelTemplateForCreateSpareParts = async (req: Request, res
     return res.download("./file", fileName)
 }
 
-export const UploadSparePartPhotos = async (req: Request, res: Response, next: NextFunction) => {
+export const UploadSparePartPhoto = async (req: Request, res: Response, next: NextFunction) => {
 
 }

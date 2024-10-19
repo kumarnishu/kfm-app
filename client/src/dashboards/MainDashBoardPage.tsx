@@ -31,7 +31,7 @@ function MainDashBoardPage() {
   };
 
   const DrawerList = (
-    <Box sx={{ width: 250 }} role="presentation" onClick={toggleDrawer(false)}>
+    <Box sx={{ width: 250, background: 'whitesmoke' }} role="presentation" onClick={toggleDrawer(false)}>
       <Stack direction={'row'} justifyContent={'center'} mr={4}>
         <Box sx={{ py: 2 }}>
           <Link to="/" replace={true} onClick={() => {
@@ -91,12 +91,12 @@ function MainDashBoardPage() {
     user?.is_admin && tmpfeatures.push({ feature: 'users', is_visible: true, url: "/Users" })
     user?.is_admin && tmpfeatures.push({ feature: 'Customer ', is_visible: true, url: "Customer" })
     user?.is_admin && tmpfeatures.push({ feature: 'Machines ', is_visible: true, url: "Customer" })
-
+    user?.is_admin && tmpfeatures.push({ feature: 'Spare Parts ', is_visible: true, url: "Customer" })
     user?.is_admin && tmpfeatures.push({ feature: 'Problems And Solutions ', is_visible: true, url: "Customer" })
     user?.is_admin && tmpfeatures.push({ feature: 'Registered Product ', is_visible: true, url: "Customer" })
     user?.is_admin && tmpfeatures.push({ feature: 'Service Requests ', is_visible: true, url: "Customer" })
-    user?.is_admin && tmpfeatures.push({ feature: 'Spare Parts ', is_visible: true, url: "Customer" })
-   
+
+
     setFeatures(tmpfeatures)
     setFilteredFeatures(tmpfeatures)
 
