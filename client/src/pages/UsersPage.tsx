@@ -273,12 +273,13 @@ export default function UsersPage() {
                 accessorKey: 'is_admin',
                 header: 'Role',
                 size: 150,
+                Cell: (cell) => <>{cell.row.original.is_admin ? "admin" : "user"}</>
             },
             {
                 accessorKey: 'is_active',
                 header: 'Status',
                 size: 150,
-
+                Cell: (cell) => <>{cell.row.original.is_active ? "active" : "blocked"}</>
             },
             {
                 accessorKey: 'orginal_password',
