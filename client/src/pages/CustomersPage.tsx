@@ -5,7 +5,6 @@ import { useContext, useEffect, useMemo, useState } from 'react'
 import { useQuery } from 'react-query'
 import { BackendError } from '..'
 import { MaterialReactTable, MRT_ColumnDef, MRT_SortingState, useMaterialReactTable } from 'material-react-table'
-import { onlyUnique } from '../utils/UniqueArray'
 import { Block, Edit, Restore } from '@mui/icons-material'
 import { Menu as MenuIcon } from '@mui/icons-material';
 import { ChoiceContext, CustomerChoiceActions } from '../contexts/dialogContext'
@@ -25,7 +24,7 @@ export default function CustomersPage() {
   const { data, isSuccess, isLoading } = useQuery<AxiosResponse<GetCustomerDto[]>, BackendError>(["customers", hidden], async () => GetAllCustomers({ hidden: hidden }))
 
   const [sorting, setSorting] = useState<MRT_SortingState>([]);
-  const { user: LoggedInCustomer } = useContext(UserContext)
+  const { user: LoggedInUser } = useContext(UserContext)
   const { setChoice } = useContext(ChoiceContext)
   const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
 
@@ -40,30 +39,34 @@ export default function CustomersPage() {
         Cell: ({ cell }) => <PopUp
           element={
             <Stack direction="row">
+              {
+                LoggedInUser?.assigned_permissions.includes('customer_edit') &&
+                <>
+                  <Tooltip title="edit">
+                    <IconButton
+                      color="success"
+                      size="medium"
+                      onClick={() => {
+                        setChoice({ type: CustomerChoiceActions.create_or_edit_customer })
+                        setCustomer(cell.row.original)
+                      }}>
+                      <Edit />
+                    </IconButton>
+                  </Tooltip>
+                  <Tooltip title={cell.row.original.is_active ? "Block" : "UnBlock"}>
+                    <IconButton
+                      size="medium"
+                      onClick={() => {
+                        setChoice({ type: CustomerChoiceActions.toogle_block_customer })
+                        setCustomer(cell.row.original)
 
-              <Tooltip title="edit">
-                <IconButton
-                  color="success"
-                  size="medium"
-                  onClick={() => {
-                    setChoice({ type: CustomerChoiceActions.create_or_edit_customer })
-                    setCustomer(cell.row.original)
-                  }}>
-                  <Edit />
-                </IconButton>
-              </Tooltip>
-              <Tooltip title={cell.row.original.is_active ? "Block" : "UnBlock"}>
-                <IconButton
-                  size="medium"
-                  onClick={() => {
-                    setChoice({ type: CustomerChoiceActions.toogle_block_customer })
-                    setCustomer(cell.row.original)
-
-                  }}
-                >
-                  {cell.row.original.is_active ? <Block /> : <Restore />}
-                </IconButton>
-              </Tooltip>
+                      }}
+                    >
+                      {cell.row.original.is_active ? <Block /> : <Restore />}
+                    </IconButton>
+                  </Tooltip>
+                </>
+              }
 
 
 
@@ -204,8 +207,8 @@ export default function CustomersPage() {
               sx={{ borderRadius: 2 }}
             >
               {
-
-                <MenuItem onClick={() => {
+                LoggedInUser?.assigned_permissions.includes('customer_create') &&
+                < MenuItem onClick={() => {
                   setChoice({ type: CustomerChoiceActions.create_or_edit_customer })
                   setAnchorEl(null)
                   setCustomer(undefined)
@@ -215,7 +218,7 @@ export default function CustomersPage() {
                     New Customer
                   </Typography>
                 </MenuItem>}
-              <MenuItem
+              {LoggedInUser?.assigned_permissions.includes('customer_view') && <MenuItem
 
                 onClick={() => {
                   setHidden(!hidden)
@@ -225,16 +228,16 @@ export default function CustomersPage() {
                 <Typography style={{ paddingLeft: '2px', fontSize: 16 }} variant='h6' color={'error'}>
                   {hidden ? "Show Active" : "Show Inactive"}
                 </Typography>
-              </MenuItem>
-              <MenuItem onClick={() => ExportToExcel(table.getRowModel().rows.map((row) => { return row.original }), "Users Data")}
+              </MenuItem>}
+              {LoggedInUser?.assigned_permissions.includes('customer_export') && <MenuItem onClick={() => ExportToExcel(table.getRowModel().rows.map((row) => { return row.original }), "Users Data")}
               >  <Typography style={{ paddingLeft: '2px', fontSize: 16 }} variant='h6' color={'error'}>
                   Export All
-                </Typography></MenuItem>
-              <MenuItem disabled={!table.getIsSomeRowsSelected() && !table.getIsAllRowsSelected()} onClick={() => ExportToExcel(table.getSelectedRowModel().rows.map((row) => { return row.original }), "Users Data")}
+                </Typography></MenuItem>}
+              {LoggedInUser?.assigned_permissions.includes('customer_export') && <MenuItem disabled={!table.getIsSomeRowsSelected() && !table.getIsAllRowsSelected()} onClick={() => ExportToExcel(table.getSelectedRowModel().rows.map((row) => { return row.original }), "Users Data")}
               >
                 <Typography style={{ paddingLeft: '2px', fontSize: 16 }} variant='h6' color={'error'}>
                   Export Selected</Typography>
-              </MenuItem>
+              </MenuItem>}
             </Menu>
             <CreateOrEditCustomerDialog />
           </>

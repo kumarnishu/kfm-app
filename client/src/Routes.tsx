@@ -31,7 +31,7 @@ function AppRoutes() {
                 }
               />
             </Route>}
-          {user?.is_admin &&
+          {user?.assigned_permissions.includes('customer_menu') &&
             < Route path="Customer">
               <Route index
                 element={
