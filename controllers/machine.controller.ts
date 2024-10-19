@@ -49,7 +49,7 @@ export const UpdateMachine = async (req: Request, res: Response, next: NextFunct
     machineTmp.model = model;
     if (req.user)
         machineTmp.updated_by = req.user
-
+    await machineTmp.save()
     return res.status(200).json({ message: "updated" })
 
 }
@@ -77,7 +77,7 @@ export const GetAllMachines = async (req: Request, res: Response, next: NextFunc
             _id: machine._id,
             name: machine.name,
             model: machine.model,
-            photos: machine.photos ? machine.photos.map((u) => { return u?.public_url || "" }) : [""],
+            photo: machine.photo?.public_url || "",
             is_active: machine.is_active,
             created_at: moment(machine.created_at).format("DD/MM/YYYY"),
             updated_at: moment(machine.updated_at).format("DD/MM/YYYY"),
@@ -189,5 +189,5 @@ export const DownloadExcelTemplateForCreateMachines = async (req: Request, res: 
 }
 
 export const UploadMachinePhoto = async (req: Request, res: Response, next: NextFunction) => {
-    
+
 }

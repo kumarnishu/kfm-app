@@ -50,7 +50,7 @@ export const UpdateSparePart = async (req: Request, res: Response, next: NextFun
     partTmp.partno = partno;
     if (req.user)
         partTmp.updated_by = req.user
-
+    await partTmp.save()
     return res.status(200).json({ message: "updated" })
 
 }
@@ -78,7 +78,7 @@ export const GetAllSpareParts = async (req: Request, res: Response, next: NextFu
             _id: part._id,
             name: part.name,
             partno: part.partno,
-            photos: part.photos ? part.photos.map((u) => { return u?.public_url || "" }) : [""],
+            photo: part.photo?.public_url || "",
             compatible_machines: part.compatible_machines && part.compatible_machines.map((m) => { return m.name }).toString(),
             is_active: part.is_active,
             created_at: moment(part.created_at).format("DD/MM/YYYY"),

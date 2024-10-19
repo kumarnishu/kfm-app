@@ -13,9 +13,9 @@ router.route("/customers")
 router.get("/dropdown/customers", isAuthenticatedUser, GetCustomersForDropdown)
 router.route("/customers/:id")
     .put(isAuthenticatedUser, UpdateCustomer).get(GetCustomerForEdit)
-router.patch("/toogle-block-customer", isAuthenticatedUser, ToogleBlockCustomer)
+router.patch("/toogle-block-customer/:id", isAuthenticatedUser, ToogleBlockCustomer)
 router.route("/create-from-excel/customers")
-    .post(isAuthenticatedUser,  CreateCustomerFromExcel)
+    .post(isAuthenticatedUser, upload.single("excel"),  CreateCustomerFromExcel)
 router.get("/download/template/customers", isAuthenticatedUser, DownloadExcelTemplateForCreateCustomers)
 
 export default router;

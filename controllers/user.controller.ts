@@ -783,7 +783,7 @@ export const CreateUserFromExcel = async (req: Request, res: Response, next: Nex
             let email: string | null = user.email
             let password: string | null = user.password
             let customer: string | null = user.customer
-            let mobile: string | null = user.mobile
+            let mobile: string | null = String(user.mobile)
 
             let validated = true
 
@@ -830,8 +830,10 @@ export const CreateUserFromExcel = async (req: Request, res: Response, next: Nex
                 validated = false
                 statusText = "mobile already exists"
             }
+
+
             if (validated) {
-                await new User({
+                let user = new User({
                     username,
                     email,
                     password,
@@ -840,7 +842,13 @@ export const CreateUserFromExcel = async (req: Request, res: Response, next: Nex
                     updated_by: req.user,
                     updated_at: new Date(Date.now()),
                     created_at: new Date(Date.now())
-                }).save()
+                })
+                if (customer) {
+                    let obj = await Customer.findOne({ name: customer })
+                    if (obj)
+                        user.customer = obj
+                }
+                await user.save()
                 statusText = "success"
             }
             result.push({

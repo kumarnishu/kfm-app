@@ -1,11 +1,10 @@
-import { Avatar,  Fade, IconButton,  Menu, MenuItem, Tooltip, Typography } from '@mui/material'
+import { Avatar, Fade, IconButton, Menu, MenuItem, Tooltip, Typography } from '@mui/material'
 import { Stack } from '@mui/system'
 import { AxiosResponse } from 'axios'
 import { useContext, useEffect, useMemo, useState } from 'react'
 import { useQuery } from 'react-query'
 import { BackendError } from '..'
 import { MaterialReactTable, MRT_ColumnDef, MRT_SortingState, useMaterialReactTable } from 'material-react-table'
-import { onlyUnique } from '../utils/UniqueArray'
 import { Assignment, Block, DeviceHubOutlined, Edit, GroupAdd, GroupRemove, Key, KeyOffOutlined, RemoveCircle, Restore } from '@mui/icons-material'
 import { UserContext } from '../contexts/userContext'
 import { Menu as MenuIcon } from '@mui/icons-material';
@@ -30,7 +29,7 @@ export default function UsersPage() {
     const [hidden, setHidden] = useState(false)
     const [user, setUser] = useState<GetUserDto>()
     const [users, setUsers] = useState<GetUserDto[]>([])
-    const { data, isSuccess } = useQuery<AxiosResponse<GetUserDto[]>, BackendError>(["users", hidden], async () => GetAllUsers({ hidden: hidden, permission: undefined, show_assigned_only: false }))
+    const { data, isSuccess, isLoading } = useQuery<AxiosResponse<GetUserDto[]>, BackendError>(["users", hidden], async () => GetAllUsers({ hidden: hidden, permission: undefined, show_assigned_only: false }))
 
     const [sorting, setSorting] = useState<MRT_SortingState>([]);
     const { user: LoggedInUser } = useContext(UserContext)
@@ -44,7 +43,6 @@ export default function UsersPage() {
                 accessorKey: 'actions',
                 header: '',
                 maxSize: 50,
-                Footer: <b></b>,
                 Cell: ({ cell }) => <PopUp
                     element={
                         <Stack direction="row">
@@ -253,86 +251,76 @@ export default function UsersPage() {
                 accessorKey: 'username',
                 header: 'Name',
                 size: 150,
-                filterVariant: 'multi-select',
-                filterSelectOptions: data && users.map((i) => { return i.username.toString() }).filter(onlyUnique)
             },
             {
                 accessorKey: 'customer',
                 header: 'Customer',
-                size: 320,
-                filterVariant: 'multi-select',
-                Cell: (cell) => <>{cell.row.original.customer ? cell.row.original.customer : ""}</>,
-                filterSelectOptions: data && users.map((i) => {
-                    if (i.customer) return i.customer
-                    return ""
-                }).filter(onlyUnique)
+                size: 220,
             },
             {
                 accessorKey: 'email',
                 header: 'Email',
-                size: 220,
+                size: 150,
                 Cell: (cell) => <>{cell.row.original.email}</>,
-                filterSelectOptions: data && users.map((i) => {
-                    return i.email
-
-                }).filter(onlyUnique)
+            },
+            {
+                accessorKey: 'mobile',
+                header: 'Mobile',
+                size: 150,
+                Cell: (cell) => <>{cell.row.original.mobile}</>,
             },
             {
                 accessorKey: 'is_admin',
                 header: 'Role',
-                size: 120,
-                filterVariant: 'multi-select',
-                Cell: (cell) => <>{cell.row.original.is_admin ? "admin" : "user"}</>,
-                filterSelectOptions: data && users.map((i) => {
-                    if (i.is_admin) return "admin"
-                    return "user"
-                }).filter(onlyUnique)
+                size: 150,
             },
             {
                 accessorKey: 'is_active',
                 header: 'Status',
-                size: 120,
-                filterVariant: 'multi-select',
-                Cell: (cell) => <>{cell.row.original.is_active ? "active" : "blocked"}</>,
-                filterSelectOptions: data && users.map((i) => {
-                    if (i.is_active) return "active"
-                    return "blocked"
-                }).filter(onlyUnique)
+                size: 150,
+
             },
             {
-                accessorKey: 'password',
+                accessorKey: 'orginal_password',
                 header: 'Password',
-                size: 220,
-                filterVariant: 'multi-select',
-                Cell: (cell) => <>{cell.row.original.orginal_password}</>,
-                filterSelectOptions: data && users.map((i) => {
-                    return i.orginal_password || ""
-                }).filter(onlyUnique)
+                size: 150
             },
             {
                 accessorKey: 'assigned_permissions',
                 header: 'Permissions',
-                size: 220,
+                size: 150,
                 Cell: (cell) => <>{cell.row.original.assigned_permissions.length || 0}</>
             },
 
             {
                 accessorKey: 'is_multi_login',
                 header: 'Multi Device',
-                size: 220,
+                size: 150,
                 Cell: (cell) => <>{cell.row.original.is_multi_login ? "Allowed" : "Blocked"}</>
             },
             {
                 accessorKey: 'assigned_users',
                 header: 'Assigned Users',
-                size: 220,
+                size: 150,
                 Cell: (cell) => <>{cell.row.original.assigned_users || 0}</>
             },
             {
                 accessorKey: 'last_login',
                 header: 'Last Active',
-                size: 220,
+                size: 150,
                 Cell: (cell) => <>{cell.row.original.last_login || ""}</>
+            },
+            {
+                accessorKey: 'created_at',
+                header: 'Created At',
+                size: 150,
+                Cell: (cell) => <>{cell.row.original.created_at || ""}</>
+            },
+            {
+                accessorKey: 'created_by',
+                header: 'Created By',
+                size: 150,
+                Cell: (cell) => <>{cell.row.original.created_by || ""}</>
             }
 
         ],
@@ -346,6 +334,7 @@ export default function UsersPage() {
         columns,
         data: users, //10,000 rows       
         enableColumnResizing: true,
+        columnFilterDisplayMode: "popover",
         enableColumnVirtualization: true, enableStickyFooter: true,
         muiTableFooterRowProps: () => ({
             sx: {
@@ -377,7 +366,7 @@ export default function UsersPage() {
             variant: 'outlined',
         },
         initialState: {
-            density: 'compact', pagination: { pageIndex: 0, pageSize: 100 }
+            density: 'compact', pagination: { pageIndex: 0, pageSize: 100 }, showGlobalFilter: true
         },
         enableGrouping: true,
         enableRowSelection: true,
@@ -388,7 +377,7 @@ export default function UsersPage() {
         enableTableFooter: true,
         enableRowVirtualization: true,
         onSortingChange: setSorting,
-        state: { sorting }
+        state: { isLoading, sorting }
     });
 
     useEffect(() => {
@@ -417,22 +406,9 @@ export default function UsersPage() {
 
                 <Stack
                     direction="row"
+                    gap={4}
                 >
-
-                    < Stack direction="row" spacing={2}>
-                        <Stack direction={'row'} alignItems={'center'}>
-                            <input type='checkbox' onChange={(e) => {
-                                if (e.target.checked) {
-                                    setHidden(true)
-                                }
-                                else
-                                    setHidden(false)
-                            }} /> <Typography style={{ paddingLeft: '5px' }} variant='h6'>Blocked</Typography>
-                        </Stack >
-
-                        <UserExcelButtons />
-
-                    </Stack >
+                    <UserExcelButtons />
                     {/* user menu */}
                     <>
                         <IconButton size="small" color="primary"
@@ -460,7 +436,11 @@ export default function UsersPage() {
                                     setAnchorEl(null)
                                     setUser(undefined)
                                 }}
-                                >New User</MenuItem>}
+                                >
+                                    <Typography style={{ paddingLeft: '2px', fontSize: 16 }} variant='h6' color={'error'}>
+                                        New User
+                                    </Typography>
+                                </MenuItem>}
 
 
                             <MenuItem
@@ -475,12 +455,33 @@ export default function UsersPage() {
                                     }
                                     setAnchorEl(null)
                                 }}
-                            >Assign Permissions</MenuItem>
+                            >
+                                <Typography style={{ paddingLeft: '2px', fontSize: 16 }} variant='h6' color={'error'}>
+                                    Assign Permissions
+                                </Typography>
+                            </MenuItem>
+                            <MenuItem
 
-                            <MenuItem onClick={() => ExportToExcel(table.getRowModel().rows.map((row) => { return row.original }), "Exported Data")}
-                            >Export All</MenuItem>
-                            <MenuItem disabled={!table.getIsSomeRowsSelected() && !table.getIsAllRowsSelected()} onClick={() => ExportToExcel(table.getSelectedRowModel().rows.map((row) => { return row.original }), "Exported Data")}
-                            >Export Selected</MenuItem>
+                                onClick={() => {
+                                    setHidden(!hidden)
+                                    setAnchorEl(null)
+                                }}
+                            >
+                                <Typography style={{ paddingLeft: '2px', fontSize: 16 }} variant='h6' color={'error'}>
+                                    {hidden ? "Show Active" : "Show Inactive"}
+                                </Typography>
+                            </MenuItem>
+
+
+                            <MenuItem onClick={() => ExportToExcel(table.getRowModel().rows.map((row) => { return row.original }), "Users Data")}
+                            >  <Typography style={{ paddingLeft: '2px', fontSize: 16 }} variant='h6' color={'error'}>
+                                    Export All
+                                </Typography></MenuItem>
+                            <MenuItem disabled={!table.getIsSomeRowsSelected() && !table.getIsAllRowsSelected()} onClick={() => ExportToExcel(table.getSelectedRowModel().rows.map((row) => { return row.original }), "Users Data")}
+                            >
+                                <Typography style={{ paddingLeft: '2px', fontSize: 16 }} variant='h6' color={'error'}>
+                                    Export Selected</Typography>
+                            </MenuItem>
                         </Menu>
                         <CreateOrEditUserDialog />
                         <AssignPermissionsToUsersDialog user_ids={table.getSelectedRowModel().rows.map((I) => { return I.original._id })} />

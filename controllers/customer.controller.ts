@@ -50,7 +50,7 @@ export const UpdateCustomer = async (req: Request, res: Response, next: NextFunc
     customerTmp.address = address;
     if (req.user)
         customerTmp.updated_by = req.user
-
+    await customerTmp.save()
     return res.status(200).json({ message: "updated" })
 
 }
@@ -92,12 +92,15 @@ export const GetAllCustomers = async (req: Request, res: Response, next: NextFun
 
 export const GetCustomerForEdit = async (req: Request, res: Response, next: NextFunction) => {
     const id = req.params.id
+
+    if (!isMongoId(id))
+        return res.status(404).json({ message: "invalid id" })
     let customerTmp = await Customer.findById(id)
     if (!customerTmp)
         return res.status(404).json({ message: "customer not found" })
 
     let result: GetCustomerForEditDto = {
-        _id:customerTmp._id,
+        _id: customerTmp._id,
         name: customerTmp.name,
         address: customerTmp.address
     }

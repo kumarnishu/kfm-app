@@ -1,12 +1,19 @@
 import React, { useReducer } from "react"
 
 type UserChoices = "signup" | "send_password_reset_link" | "close_user" | "create_or_edit_user" | "update_profile" | "view_profile" | "update_password" | "reset_password" | "send_email_verification_link" |
-  "toogle_block_user" | "toogle_admin" | "change_password_from_admin" | "toogle_multi_device_login" | "assign_users" | "assign_permissions" | "bulk_assign_permissions" 
+  "toogle_block_user" | "toogle_admin" | "change_password_from_admin" | "toogle_multi_device_login" | "assign_users" | "assign_permissions" | "bulk_assign_permissions"
 
+type CustomerChoices = "create_or_edit_customer" | "close_customer"|"toogle_block_customer"
 
-type ChoiceState = UserChoices
+type ChoiceState = UserChoices | CustomerChoices
 const initialState: ChoiceState | null = null
 
+
+export enum CustomerChoiceActions {
+  create_or_edit_customer = "create_or_edit_customer",
+  close_customer = "close_customer",
+  toogle_block_customer ="toogle_block_customer"
+}
 export enum UserChoiceActions {
   assign_users = "assign_users",
   assign_permissions = "assign_permissions",
@@ -28,7 +35,7 @@ export enum UserChoiceActions {
 }
 
 type Action = {
-  type: UserChoiceActions
+  type: UserChoiceActions | CustomerChoiceActions
 }
 
 // reducer
@@ -53,6 +60,9 @@ function reducer(state: ChoiceState | null, action: Action) {
     case UserChoiceActions.bulk_assign_permissions: return type
     case UserChoiceActions.assign_permissions: return type
 
+    case CustomerChoiceActions.create_or_edit_customer: return type
+    case CustomerChoiceActions.toogle_block_customer: return type
+    case CustomerChoiceActions.close_customer: return type
 
 
     default: return state
