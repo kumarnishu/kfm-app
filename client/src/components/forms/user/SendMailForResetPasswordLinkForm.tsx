@@ -1,4 +1,4 @@
-import {  Button, CircularProgress, TextField } from '@mui/material';
+import { Button, CircularProgress, TextField } from '@mui/material';
 import { Stack } from '@mui/system';
 import { AxiosResponse } from 'axios';
 import { useFormik } from 'formik';
@@ -18,7 +18,7 @@ function SendMailForResetPasswordLinkForm() {
   const goto = useNavigate()
   const { user } = useContext(UserContext)
 
-  const { mutate, isSuccess, isLoading,  error } = useMutation
+  const { mutate, isSuccess, isLoading, error } = useMutation
     <AxiosResponse<string>,
       BackendError,
       { email: string }
@@ -43,12 +43,13 @@ function SendMailForResetPasswordLinkForm() {
   });
 
   useEffect(() => {
-    if (isSuccess) {
-      setChoice({ type: UserChoiceActions.close_user })
-      goto("/", { replace: true })
+    setTimeout(() => {
+      if (isSuccess) {
+        setChoice({ type: UserChoiceActions.close_user })
+        goto("/", { replace: true })
+      }
+    }, 2000)
 
-    }
-   
   }, [isSuccess])
   return (
     <form onSubmit={formik.handleSubmit}>
@@ -74,8 +75,8 @@ function SendMailForResetPasswordLinkForm() {
           }
           {...formik.getFieldProps('email')}
         />
-       
-        
+
+
         <Button variant="contained"
           disabled={Boolean(isLoading)}
           color="primary" type="submit" fullWidth>{Boolean(isLoading) ? <CircularProgress /> : "Send"}

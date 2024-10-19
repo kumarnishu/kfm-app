@@ -1,4 +1,4 @@
-import { Avatar, Button, Fade, IconButton, LinearProgress, Menu, MenuItem, Tooltip, Typography } from '@mui/material'
+import { Avatar,  Fade, IconButton,  Menu, MenuItem, Tooltip, Typography } from '@mui/material'
 import { Stack } from '@mui/system'
 import { AxiosResponse } from 'axios'
 import { useContext, useEffect, useMemo, useState } from 'react'
@@ -30,7 +30,7 @@ export default function UsersPage() {
     const [hidden, setHidden] = useState(false)
     const [user, setUser] = useState<GetUserDto>()
     const [users, setUsers] = useState<GetUserDto[]>([])
-    const { data, isSuccess, isLoading } = useQuery<AxiosResponse<GetUserDto[]>, BackendError>(["users", hidden], async () => GetAllUsers({ hidden: hidden, permission: undefined, show_assigned_only: false }))
+    const { data, isSuccess } = useQuery<AxiosResponse<GetUserDto[]>, BackendError>(["users", hidden], async () => GetAllUsers({ hidden: hidden, permission: undefined, show_assigned_only: false }))
 
     const [sorting, setSorting] = useState<MRT_SortingState>([]);
     const { user: LoggedInUser } = useContext(UserContext)
@@ -326,7 +326,7 @@ export default function UsersPage() {
                 accessorKey: 'assigned_users',
                 header: 'Assigned Users',
                 size: 220,
-                Cell: (cell) => <>{cell.row.original.assigned_users.length || 0}</>
+                Cell: (cell) => <>{cell.row.original.assigned_users || 0}</>
             },
             {
                 accessorKey: 'last_login',
@@ -487,11 +487,7 @@ export default function UsersPage() {
                     </>
                 </Stack >
             </Stack >
-            {
-                isLoading && <LinearProgress />
-            }
-
-            {!isLoading && data && <MaterialReactTable table={table} />}
+            <MaterialReactTable table={table} />
             {
                 user ?
                     <>

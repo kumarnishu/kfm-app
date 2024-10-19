@@ -52,8 +52,8 @@ function SendEmailVerificationLinkForm() {
       goto("/")
 
     }
- 
-  }, [isSuccess, error])
+
+  }, [isSuccess])
 
 
 

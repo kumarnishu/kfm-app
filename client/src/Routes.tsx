@@ -34,8 +34,8 @@ function AppRoutes() {
         </Route>
       }
 
-      <Route path="/ResetPassword/:token" element={<ResetPasswordDialog />} />
-      <Route path="/VerifyEmail/:token" element={<EmailVerifyPage />} />
+      <Route path="/password/reset/:token" element={<ResetPasswordDialog />} />
+      <Route path="/email/verify/:token" element={<EmailVerifyPage />} />
       {user && <Route path="*" element={<Navigate to="/" />} />}
       <Route path="*" element={<Navigate to="/Login" />} />
 

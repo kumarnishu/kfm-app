@@ -34,15 +34,17 @@ function MainDashBoardPage() {
   const DrawerList = (
     <Box sx={{ width: 250 }} role="presentation" onClick={toggleDrawer(false)}>
       <Stack direction={'row'} justifyContent={'center'} mr={4}>
-        <Link to="/" replace={true} onClick={() => {
-          {
-            setFeature({ feature: "Dashboard", url: "/" })
-            setSearch("")
-            navigate("/")
-          }
-        }}>
-          <AgarsonLogo width={120} height={120} title='Go To Dashboard' />
-        </Link>
+        <Box sx={{ py: 2 }}>
+          <Link to="/" replace={true} onClick={() => {
+            {
+              setFeature({ feature: "Dashboard", url: "/" })
+              setSearch("")
+              navigate("/")
+            }
+          }}>
+            <AgarsonLogo width={60} height={60} title='Go To Dashboard' />
+          </Link>
+        </Box>
       </Stack>
       <List>
         {filteredfeatures.map((feat, index) => (
@@ -53,10 +55,8 @@ function MainDashBoardPage() {
             }}>
               <Divider />
               <ListItem key={index} disablePadding>
-                <ListItemButton >
-                  <ListItemIcon >
-                    <ButtonLogo title="" height={25} width={25} />
-                  </ListItemIcon>
+                <ListItemButton sx={{ gap: 1 }} >
+                  <ButtonLogo title="" height={25} width={25} />
                   <ListItemText primary={feat.feature.toUpperCase()} />
                 </ListItemButton>
               </ListItem>
@@ -99,10 +99,10 @@ function MainDashBoardPage() {
     user?.is_admin && tmpfeatures.push({ feature: 'Spare Parts ', is_visible: true, url: "Company" })
     // user?.is_admin && tmpfeatures.push({ feature: 'Visit ', is_visible: true, url: "Visit" })
 
-  //user?.is_admin && tmpfeatures.push({ feature: 'Visits', is_visible: true, url: "/Visit" })
+    //user?.is_admin && tmpfeatures.push({ feature: 'Visits', is_visible: true, url: "/Visit" })
 
 
-   
+
 
     setFeatures(tmpfeatures)
     setFilteredFeatures(tmpfeatures)

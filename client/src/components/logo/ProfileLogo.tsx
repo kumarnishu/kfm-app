@@ -66,7 +66,7 @@ function ProfileMenu() {
                     !user?.email_verified ?
 
                         <MenuItem onClick={() => {
-                            setChoice({ type: UserChoiceActions.verify_email })
+                            setChoice({ type: UserChoiceActions.send_email_verification_link })
                             setMenu({ type: UserMenuActions.close_user_menu, anchorEl: null })
                         }}>
                             Verify Email
@@ -98,7 +98,7 @@ function ProfileLogo() {
                     }
                 >
                     <Avatar
-                        sx={{ width: 30, height: 30 }}
+                        sx={{ width: 40, height: 40 }}
                         alt="img1" src={user?.dp} />
                 </IconButton>
             </Tooltip>

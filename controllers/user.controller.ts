@@ -627,7 +627,7 @@ export const SendMailForResetPasswordLink = async (req: Request, res: Response, 
     const message = `Your password reset token is :- \n\n ${resetPasswordUrl} \n\n valid for 15 minutes only \n\n\n\nIf you have not requested this email then, please ignore it.`;
     const options = {
         to: user.email,
-        subject: `Bo Agarson Password Recovery`,
+        subject: `Kfm India Password Recovery`,
         message: message,
     };
     let response = await sendEmail(options);
@@ -681,7 +681,7 @@ export const SendEmailVerificationLink = async (req: Request, res: Response, nex
     const message = `Your email verification link is :- \n\n ${emailVerficationUrl} \n\n valid for 15 minutes only \n\nIf you have not requested this email then, please ignore it.`;
     const options = {
         to: user.email,
-        subject: `Bo Agarson Email Verification`,
+        subject: `Kfm India Email Verification`,
         message,
     };
 

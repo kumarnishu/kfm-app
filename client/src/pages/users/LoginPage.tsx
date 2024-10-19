@@ -1,4 +1,4 @@
-import { Typography, Stack, Paper } from '@mui/material'
+import { Typography, Stack, Paper, Box } from '@mui/material'
 import { useContext } from 'react';
 import ResetPasswordSendMailDialog from '../../components/dialogs/users/ResetPasswordSendMailDialog';
 import SignUpDialog from '../../components/dialogs/users/SignUpDialog';
@@ -12,11 +12,15 @@ function LoginPage() {
     return (
         <>
             <Stack sx={{ justifyContent: 'center', alignItems: 'center', height: '90vh', width: '100vw' }}>
-                <Paper elevation={2} sx={{ maxWidth: '350px', p: 5  , px: 2, borderRadius: 10,border:4,borderColor:'whitesmoke' }}>
+                <Paper elevation={2} sx={{ maxWidth: '350px', p: 5, px: 2, borderRadius: 10, border: 4, borderColor: 'whitesmoke' }}>
                     <Stack justifyContent={"center"} alignItems="center">
-                        <a href="https://agarsonshoes.in/">
-                            <AgarsonLogo width={60} height={60} title='Agarson Shoes' />
-                        </a>
+                        <Box sx={{
+                            pb: 4
+                        }}>
+                            <a href="https://agarsonshoes.in/">
+                                < AgarsonLogo width={70} height={70} title='Agarson Shoes' />
+                            </a>
+                        </Box>
                         <LoginForm />
                         <Stack
                             alignItems="center"
@@ -38,15 +42,15 @@ function LoginPage() {
                                 variant="body1"
                                 sx={{ cursor: "pointer" }}
                                 component="span"
-                                onClick={() => setChoice({ type: UserChoiceActions.reset_password_mail })}
+                                onClick={() => setChoice({ type: UserChoiceActions.send_password_reset_link })}
                             >
                                 Forgot Password
                             </Typography >
 
                         </Stack>
                     </Stack>
-                </Paper>
-            </Stack>
+                </Paper >
+            </Stack >
             <Typography component="h1" variant="button" sx={{ textAlign: "center", fontWeight: '600', fontSize: 12, color: 'grey' }}>Copyright 2024 &copy; Kumar Footwear Machinery </Typography>
             <SignUpDialog />
             <ResetPasswordSendMailDialog />
