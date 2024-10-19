@@ -3,7 +3,6 @@ import List from '@mui/material/List';
 import Divider from '@mui/material/Divider';
 import ListItem from '@mui/material/ListItem';
 import ListItemButton from '@mui/material/ListItemButton';
-import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import { Box, Grid, IconButton, InputAdornment, Paper, Stack, TextField, Typography } from '@mui/material';
 import { Link, Outlet, useNavigate } from 'react-router-dom';
@@ -90,20 +89,14 @@ function MainDashBoardPage() {
   useEffect(() => {
     let tmpfeatures: { feature: string, is_visible?: boolean, url: string }[] = []
     user?.is_admin && tmpfeatures.push({ feature: 'users', is_visible: true, url: "/Users" })
-    user?.is_admin && tmpfeatures.push({ feature: 'Company ', is_visible: true, url: "Company" })
-    user?.is_admin && tmpfeatures.push({ feature: 'Machines ', is_visible: true, url: "Company" })
+    user?.is_admin && tmpfeatures.push({ feature: 'Customer ', is_visible: true, url: "Customer" })
+    user?.is_admin && tmpfeatures.push({ feature: 'Machines ', is_visible: true, url: "Customer" })
 
-    user?.is_admin && tmpfeatures.push({ feature: 'Problems And Solutions ', is_visible: true, url: "Company" })
-    user?.is_admin && tmpfeatures.push({ feature: 'Registered Product ', is_visible: true, url: "Company" })
-    user?.is_admin && tmpfeatures.push({ feature: 'Service Requests ', is_visible: true, url: "Company" })
-    user?.is_admin && tmpfeatures.push({ feature: 'Spare Parts ', is_visible: true, url: "Company" })
-    // user?.is_admin && tmpfeatures.push({ feature: 'Visit ', is_visible: true, url: "Visit" })
-
-    //user?.is_admin && tmpfeatures.push({ feature: 'Visits', is_visible: true, url: "/Visit" })
-
-
-
-
+    user?.is_admin && tmpfeatures.push({ feature: 'Problems And Solutions ', is_visible: true, url: "Customer" })
+    user?.is_admin && tmpfeatures.push({ feature: 'Registered Product ', is_visible: true, url: "Customer" })
+    user?.is_admin && tmpfeatures.push({ feature: 'Service Requests ', is_visible: true, url: "Customer" })
+    user?.is_admin && tmpfeatures.push({ feature: 'Spare Parts ', is_visible: true, url: "Customer" })
+   
     setFeatures(tmpfeatures)
     setFilteredFeatures(tmpfeatures)
 
