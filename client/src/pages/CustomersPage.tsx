@@ -178,7 +178,7 @@ export default function CustomersPage() {
           component={'h1'}
           sx={{ pl: 1 }}
         >
-          Users
+          Customers
         </Typography>
 
         <Stack

@@ -3,16 +3,30 @@ import React, { useReducer } from "react"
 type UserChoices = "signup" | "send_password_reset_link" | "close_user" | "create_or_edit_user" | "update_profile" | "view_profile" | "update_password" | "reset_password" | "send_email_verification_link" |
   "toogle_block_user" | "toogle_admin" | "change_password_from_admin" | "toogle_multi_device_login" | "assign_users" | "assign_permissions" | "bulk_assign_permissions"
 
-type CustomerChoices = "create_or_edit_customer" | "close_customer"|"toogle_block_customer"
+type CustomerChoices = "create_or_edit_customer" | "close_customer" | "toogle_block_customer"
 
-type ChoiceState = UserChoices | CustomerChoices
+type MachineChoices = "create_or_edit_machine" | "close_machine" | "toogle_block_machine"
+
+type SparePartChoices = "create_or_edit_part" | "close_part" | "toogle_block_part"
+
+type ChoiceState = UserChoices | CustomerChoices | MachineChoices | SparePartChoices
 const initialState: ChoiceState | null = null
 
 
 export enum CustomerChoiceActions {
   create_or_edit_customer = "create_or_edit_customer",
   close_customer = "close_customer",
-  toogle_block_customer ="toogle_block_customer"
+  toogle_block_customer = "toogle_block_customer"
+}
+export enum SparePartChoiceActions {
+  create_or_edit_part = "create_or_edit_part",
+  close_part = "close_part",
+  toogle_block_part = "toogle_block_part"
+}
+export enum MachineChoiceActions {
+  create_or_edit_machine = "create_or_edit_machine",
+  close_machine = "close_machine",
+  toogle_block_machine = "toogle_block_machine"
 }
 export enum UserChoiceActions {
   assign_users = "assign_users",
@@ -35,7 +49,7 @@ export enum UserChoiceActions {
 }
 
 type Action = {
-  type: UserChoiceActions | CustomerChoiceActions
+  type: UserChoiceActions | CustomerChoiceActions | MachineChoiceActions | SparePartChoiceActions
 }
 
 // reducer
@@ -64,6 +78,13 @@ function reducer(state: ChoiceState | null, action: Action) {
     case CustomerChoiceActions.toogle_block_customer: return type
     case CustomerChoiceActions.close_customer: return type
 
+    case MachineChoiceActions.create_or_edit_machine: return type
+    case MachineChoiceActions.toogle_block_machine: return type
+    case MachineChoiceActions.close_machine: return type
+
+    case SparePartChoiceActions.create_or_edit_part: return type
+    case SparePartChoiceActions.toogle_block_part: return type
+    case SparePartChoiceActions.close_part: return type
 
     default: return state
   }

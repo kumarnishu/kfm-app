@@ -90,8 +90,8 @@ function MainDashBoardPage() {
     let tmpfeatures: { feature: string, is_visible?: boolean, url: string }[] = []
     user?.is_admin && tmpfeatures.push({ feature: 'users', is_visible: true, url: "/Users" })
     user?.assigned_permissions.includes('customer_menu') && tmpfeatures.push({ feature: 'Customer ', is_visible: true, url: "Customer" })
-    user?.is_admin && tmpfeatures.push({ feature: 'Machines ', is_visible: true, url: "Customer" })
-    user?.is_admin && tmpfeatures.push({ feature: 'Spare Parts ', is_visible: true, url: "Customer" })
+    user?.is_admin && tmpfeatures.push({ feature: 'Machines ', is_visible: true, url: "Machine" })
+    user?.is_admin && tmpfeatures.push({ feature: 'Spare Parts ', is_visible: true, url: "SpareParts" })
     user?.is_admin && tmpfeatures.push({ feature: 'Problems And Solutions ', is_visible: true, url: "Customer" })
     user?.is_admin && tmpfeatures.push({ feature: 'Registered Product ', is_visible: true, url: "Customer" })
     user?.is_admin && tmpfeatures.push({ feature: 'Service Requests ', is_visible: true, url: "Customer" })

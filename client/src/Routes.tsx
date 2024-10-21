@@ -7,6 +7,8 @@ import ResetPasswordDialog from './components/dialogs/users/ResetPasswordDialog.
 import LoginPage from './pages/LoginPage.tsx'
 import EmailVerifyPage from './pages/EmailVerifyPage.tsx'
 import CustomersPage from './pages/CustomersPage.tsx'
+import MachinesPage from './pages/MachinesPage.tsx'
+import SparePartsPage from './pages/SparePartPage.tsx'
 
 
 
@@ -39,6 +41,23 @@ function AppRoutes() {
                 }
               />
             </Route>}
+          {user?.assigned_permissions.includes('machine_menu') &&
+            < Route path="Machine">
+              <Route index
+                element={
+                  <MachinesPage />
+                }
+              />
+            </Route>}
+          {user?.assigned_permissions.includes('part_menu') &&
+            < Route path="SpareParts">
+              <Route index
+                element={
+                  <SparePartsPage />
+                }
+              />
+            </Route>}
+
         </Route>
       }
 

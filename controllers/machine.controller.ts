@@ -34,10 +34,9 @@ export const UpdateMachine = async (req: Request, res: Response, next: NextFunct
     let machineTmp = await Machine.findById(id)
     if (!machineTmp)
         return res.status(404).json({ message: "machine not found" })
-    let body = JSON.parse(req.body.body)
     const {
         name,
-        model } = body as GetMachineForEditDto
+        model } = req.body as GetMachineForEditDto
     if (!name || !model) {
         return res.status(400).json({ message: "please fill all required fields" })
     }
@@ -90,6 +89,9 @@ export const GetAllMachines = async (req: Request, res: Response, next: NextFunc
 
 export const GetMachineForEdit = async (req: Request, res: Response, next: NextFunction) => {
     const id = req.params.id
+    if (!isMongoId(id)) {
+        return res.status(404).json({ message: "invalid id" })
+    }
     let machineTmp = await Machine.findById(id)
     if (!machineTmp)
         return res.status(404).json({ message: "machine not found" })

@@ -8,6 +8,8 @@ import { MulterError } from 'multer';
 import { connectDatabase } from './config/db';
 import UserRoutes from "./routes/user.routes";
 import CustomerRoutes from "./routes/customer.routes";
+import MachineRoutes from "./routes/machine.routes";
+import SparePartsRoutes from "./routes/spareparts.route"
 import CronJobManager from "cron-job-manager";
 import path from 'path';
 import { Server } from "socket.io";
@@ -99,14 +101,13 @@ const storage = new Storage({
 export const bucketName = String(process.env.bucketName)
 export const bucket = storage.bucket(bucketName)
 
-
-export const GreetingManager = new CronJobManager()
-export const BroadcastManager = new CronJobManager()
 export const ReportManager = new CronJobManager()
 
 //server routes
 app.use("/api/v1", UserRoutes)
 app.use("/api/v1", CustomerRoutes)
+app.use("/api/v1", MachineRoutes)
+app.use("/api/v1", SparePartsRoutes)
 
 
 //react app handler

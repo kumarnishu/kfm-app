@@ -35,10 +35,9 @@ export const UpdateSparePart = async (req: Request, res: Response, next: NextFun
     let partTmp = await SparePart.findById(id)
     if (!partTmp)
         return res.status(404).json({ message: "part not found" })
-    let body = JSON.parse(req.body.body)
-    const {
+        const {
         name,
-        partno } = body as GetSparePartForEditDto
+        partno } = req.body as GetSparePartForEditDto
     if (!name || !partno) {
         return res.status(400).json({ message: "please fill all required fields" })
     }
@@ -92,6 +91,8 @@ export const GetAllSpareParts = async (req: Request, res: Response, next: NextFu
 
 export const GetSparePartForEdit = async (req: Request, res: Response, next: NextFunction) => {
     const id = req.params.id
+    if (!isMongoId(id))
+        return res.status(404).json({ message: "bad id" })
     let partTmp = await SparePart.findById(id)
     if (!partTmp)
         return res.status(404).json({ message: "part not found" })
